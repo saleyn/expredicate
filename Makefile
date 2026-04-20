@@ -17,4 +17,7 @@ clean:
 test:
 	mix $@
 
+benchmark:
+	mix test test/benchmarks_test.exs
+
 .PHONY: test deps

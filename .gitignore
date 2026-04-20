@@ -1,6 +1,9 @@
 # Elixir
 /_build/
 /deps/
+/cover/
+/backup/
+/tmp/
 /doc/
 /erl_crash.dump
 .DS_Store

@@ -7,6 +7,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <variant>
 #include <vector>
@@ -275,11 +276,11 @@ private:
     std::shared_ptr<Expression> parse_comparison() {
       auto left = parse_primary();
 
-      std::string op = peek();
-      if (op == ">" || op == "<" || op == ">=" || op == "<=" || op == "==" ||
-          op == "!=" || op == "in" || op == "not") {
+      auto op_view = peek();
+      if (op_view == ">" || op_view == "<" || op_view == ">=" || op_view == "<=" || op_view == "==" ||
+          op_view == "!=" || op_view == "in" || op_view == "not") {
 
-        if (op == "in") {
+        if (op_view == "in") {
           consume("in");
           consume("[");
           std::vector<std::string> items;
@@ -290,7 +291,7 @@ private:
           }
           consume("]");
           return Expression::make_in_list(left, items);
-        } else if (op == "not" && peek_next() == "in") {
+        } else if (op_view == "not" && peek_next() == "in") {
           consume("not");
           consume("in");
           consume("[");
@@ -303,6 +304,7 @@ private:
           consume("]");
           return Expression::make_not_in_list(left, items);
         } else {
+          std::string op(op_view);  // Convert to std::string for storage
           consume(op);
           auto right = parse_primary();
           return Expression::make_binary_op(op, left, right);
@@ -313,39 +315,39 @@ private:
     }
 
     std::shared_ptr<Expression> parse_primary() {
-      std::string token = peek();
+      auto token_view = peek();
       
-      if (token.empty()) {
+      if (token_view.empty()) {
         throw std::runtime_error("Parse error: unexpected end of input");
       }
 
-      if (token == "(") {
+      if (token_view == "(") {
         consume("(");
         auto expr = parse_or();
         consume(")");
         return expr;
       }
 
-      if (token == "true") {
+      if (token_view == "true") {
         consume("true");
         return Expression::make_bool(true);
       }
 
-      if (token == "false") {
+      if (token_view == "false") {
         consume("false");
         return Expression::make_bool(false);
       }
 
-      if (token[0] == '\'' || token[0] == '"') {
+      if (token_view[0] == '\'' || token_view[0] == '"') {
         return Expression::make_string(parse_string_literal());
       }
 
-      if (std::isdigit(token[0]) || (token[0] == '-' && token.length() > 1)) {
-        return Expression::make_number(std::stod(token_consume()));
+      if (std::isdigit(token_view[0]) || (token_view[0] == '-' && token_view.length() > 1)) {
+        return Expression::make_number(std::stod(std::string(token_consume())));
       }
 
       // Identifier
-      return Expression::make_identifier(token_consume());
+      return Expression::make_identifier(std::string(token_consume()));
     }
 
     std::string parse_string_literal() {
@@ -372,19 +374,21 @@ private:
       return token;
     }
 
-    std::string peek() { return pos < tokens.size() ? tokens[pos] : ""; }
+    std::string_view peek() { 
+      return pos < tokens.size() ? std::string_view(tokens[pos]) : std::string_view(); 
+    }
 
-    std::string peek_next() {
-      return pos + 1 < tokens.size() ? tokens[pos + 1] : "";
+    std::string_view peek_next() {
+      return pos + 1 < tokens.size() ? std::string_view(tokens[pos + 1]) : std::string_view();
     }
 
     std::string token_consume() {
       return pos < tokens.size() ? tokens[pos++] : "";
     }
 
-    void consume(const std::string &expected) {
+    void consume(std::string_view expected) {
       if (peek() != expected) {
-        throw std::runtime_error("Parse error: expected " + expected);
+        throw std::runtime_error(std::string("Parse error: expected ") + std::string(expected));
       }
       pos++;
     }
@@ -405,7 +409,7 @@ private:
 
   static bool evaluate_binary_op(const std::shared_ptr<Expression> &expr,
                                  const ValueMap &values) {
-    const auto &op = expr->op;
+    std::string_view op(expr->op);
 
     // For logical operators, evaluate operands as boolean expressions
     if (op == "and") {
