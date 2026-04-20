@@ -34,6 +34,7 @@ enum class OpCode {
   GT, LT, GTE, LTE, EQ, NEQ,
   AND, OR, NOT,
   IN_LIST,
+  NOT_IN_LIST,
   
   JMP, JMP_FALSE,
   POP,
@@ -155,7 +156,7 @@ private:
     }
 
     void parse_not() {
-      if (peek() == "not") {
+      if (peek() == "not" && peek_next() != "in") {
         consume("not");
         parse_not();
         emit(OpCode::NOT);
@@ -169,7 +170,7 @@ private:
 
       std::string op = peek();
       if (op == ">" || op == "<" || op == ">=" || op == "<=" || op == "==" ||
-          op == "!=" || op == "in") {
+          op == "!=" || op == "in" || op == "not") {
 
         if (op == "in") {
           consume("in");
@@ -183,6 +184,21 @@ private:
           consume("]");
           Instruction instr;
           instr.op = OpCode::IN_LIST;
+          instr.list_items = items;
+          code.push_back(instr);
+        } else if (op == "not" && peek_next() == "in") {
+          consume("not");
+          consume("in");
+          consume("[");
+          std::vector<std::string> items;
+          while (peek() != "]") {
+            items.push_back(parse_string_literal());
+            if (peek() == ",")
+              consume(",");
+          }
+          consume("]");
+          Instruction instr;
+          instr.op = OpCode::NOT_IN_LIST;
           instr.list_items = items;
           code.push_back(instr);
         } else {
@@ -271,6 +287,10 @@ private:
     }
 
     std::string peek() { return pos < tokens.size() ? tokens[pos] : ""; }
+
+    std::string peek_next() {
+      return pos + 1 < tokens.size() ? tokens[pos + 1] : "";
+    }
 
     std::string token_consume() {
       return pos < tokens.size() ? tokens[pos++] : "";
@@ -383,7 +403,13 @@ private:
         if (std::holds_alternative<std::string>(val)) {
           str_val = std::get<std::string>(val);
         } else if (std::holds_alternative<double>(val)) {
-          str_val = std::to_string(std::get<double>(val));
+          double dval = std::get<double>(val);
+          // If the value is a whole number, convert as integer
+          if (dval == std::floor(dval)) {
+            str_val = std::to_string(static_cast<long long>(dval));
+          } else {
+            str_val = std::to_string(dval);
+          }
         }
         bool found = false;
         for (const auto& item : instr.list_items) {
@@ -393,6 +419,30 @@ private:
           }
         }
         stack.push_back(found);
+        break;
+      }
+      case OpCode::NOT_IN_LIST: {
+        auto val = stack.back(); stack.pop_back();
+        std::string str_val;
+        if (std::holds_alternative<std::string>(val)) {
+          str_val = std::get<std::string>(val);
+        } else if (std::holds_alternative<double>(val)) {
+          double dval = std::get<double>(val);
+          // If the value is a whole number, convert as integer
+          if (dval == std::floor(dval)) {
+            str_val = std::to_string(static_cast<long long>(dval));
+          } else {
+            str_val = std::to_string(dval);
+          }
+        }
+        bool found = false;
+        for (const auto& item : instr.list_items) {
+          if (item == str_val) {
+            found = true;
+            break;
+          }
+        }
+        stack.push_back(!found);
         break;
       }
       default:
