@@ -8,7 +8,7 @@ defmodule Atree do
   Rules are compiled boolean expressions supporting:
   - Comparison operators: `>`, `<`, `>=`, `<=`, `==`, `!=`
   - Logical operators: `and`, `or`, `not`
-  - List membership: `in ['value1', 'value2']`
+  - List membership: `in ['value1', 'value2']`, `not in ['value1', 'value2']`
   - Values: numbers, strings, booleans
   - Variables: referenced from the value map
 
@@ -17,9 +17,10 @@ defmodule Atree do
       iex> tree = Atree.new()
       iex> tree = Atree.insert!(tree, "rule1", "age > 30 and status == 'active'")
       iex> tree = Atree.insert!(tree, "rule2", "tv_brand in ['Samsung', 'LG']")
+      iex> tree = Atree.insert!(tree, "rule3", "tv_brand not in ['Samsung', 'LG']")
       iex> items = Atree.all_items(tree)
       iex> Enum.sort(items)
-      ["rule1", "rule2"]
+      ["rule1", "rule2", "rule3"]
 
   """
 
@@ -126,6 +127,7 @@ defmodule Atree do
       - `"age > 30"`
       - `"status == 'active' and age <= 65"`
       - `"tv_brand in ['Samsung', 'LG']"`
+      - `"tv_brand not in ['Samsung', 'LG']"`
       - `"not premium or age < 18"`
 
   ## Examples

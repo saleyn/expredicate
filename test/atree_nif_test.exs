@@ -173,6 +173,49 @@ defmodule AtreeTest do
       assert matches3 == []
     end
 
+    test "matches NOT IN operator" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "not_apple", "brand not in ['Apple', 'Samsung']")
+
+      matches1 = Atree.match(tree, %{"brand" => "LG"})
+      assert matches1 == ["not_apple"]
+
+      matches2 = Atree.match(tree, %{"brand" => "Google"})
+      assert matches2 == ["not_apple"]
+
+      matches3 = Atree.match(tree, %{"brand" => "Apple"})
+      assert matches3 == []
+
+      matches4 = Atree.match(tree, %{"brand" => "Samsung"})
+      assert matches4 == []
+    end
+
+    test "combines IN and NOT IN in same rule set" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "premium_brands", "brand in ['Apple', 'Samsung']")
+      {:ok, tree} = Atree.insert(tree, "budget_brands", "brand not in ['Apple', 'Samsung']")
+
+      matches1 = Atree.match(tree, %{"brand" => "Apple"})
+      assert matches1 == ["premium_brands"]
+
+      matches2 = Atree.match(tree, %{"brand" => "LG"})
+      assert matches2 == ["budget_brands"]
+    end
+
+    test "NOT IN with numeric values" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "exclude_low", "rating not in ['1', '2', '3']")
+
+      matches1 = Atree.match(tree, %{"rating" => 4})
+      assert matches1 == ["exclude_low"]
+
+      matches2 = Atree.match(tree, %{"rating" => 5})
+      assert matches2 == ["exclude_low"]
+
+      matches3 = Atree.match(tree, %{"rating" => 2})
+      assert matches3 == []
+    end
+
     test "handles complex expressions" do
       tree = Atree.new()
 

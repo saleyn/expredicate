@@ -2,6 +2,7 @@
 #define ATREE_H
 
 #include <cctype>
+#include <cmath>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
@@ -36,6 +37,7 @@ public:
     BINARY_OP,
     UNARY_OP,
     IN_LIST,
+    NOT_IN_LIST,
   };
 
   Type type;
@@ -95,6 +97,16 @@ public:
     expr->list_items = items;
     return expr;
   }
+
+  static std::shared_ptr<Expression>
+  make_not_in_list(std::shared_ptr<Expression> operand,
+                   const std::vector<std::string> &items) {
+    auto expr = std::make_shared<Expression>(false);
+    expr->type = Type::NOT_IN_LIST;
+    expr->left = operand;
+    expr->list_items = items;
+    return expr;
+  }
 };
 
 /**
@@ -145,6 +157,9 @@ public:
 
     case Expression::Type::IN_LIST:
       return evaluate_in_list(expr, values);
+
+    case Expression::Type::NOT_IN_LIST:
+      return evaluate_not_in_list(expr, values);
     }
 
     return false;
@@ -184,7 +199,7 @@ private:
               }
               // If even number of backslashes (including 0), the quote is not
               // escaped
-              if (backslash_count % 2 == 0) {
+              if ((backslash_count & 1) == 0) {
                 break;
               }
             }
@@ -249,7 +264,7 @@ private:
     }
 
     std::shared_ptr<Expression> parse_not() {
-      if (peek() == "not") {
+      if (peek() == "not" && peek_next() != "in") {
         consume("not");
         auto operand = parse_not();
         return Expression::make_unary_op("not", operand);
@@ -262,7 +277,7 @@ private:
 
       std::string op = peek();
       if (op == ">" || op == "<" || op == ">=" || op == "<=" || op == "==" ||
-          op == "!=" || op == "in") {
+          op == "!=" || op == "in" || op == "not") {
 
         if (op == "in") {
           consume("in");
@@ -275,6 +290,18 @@ private:
           }
           consume("]");
           return Expression::make_in_list(left, items);
+        } else if (op == "not" && peek_next() == "in") {
+          consume("not");
+          consume("in");
+          consume("[");
+          std::vector<std::string> items;
+          while (peek() != "]") {
+            items.push_back(parse_string_literal());
+            if (peek() == ",")
+              consume(",");
+          }
+          consume("]");
+          return Expression::make_not_in_list(left, items);
         } else {
           consume(op);
           auto right = parse_primary();
@@ -347,6 +374,10 @@ private:
 
     std::string peek() { return pos < tokens.size() ? tokens[pos] : ""; }
 
+    std::string peek_next() {
+      return pos + 1 < tokens.size() ? tokens[pos + 1] : "";
+    }
+
     std::string token_consume() {
       return pos < tokens.size() ? tokens[pos++] : "";
     }
@@ -418,7 +449,13 @@ private:
     if (std::holds_alternative<std::string>(val)) {
       str_val = std::get<std::string>(val);
     } else if (std::holds_alternative<double>(val)) {
-      str_val = std::to_string(std::get<double>(val));
+      double dval = std::get<double>(val);
+      // If the value is a whole number, convert as integer
+      if (dval == std::floor(dval)) {
+        str_val = std::to_string(static_cast<long long>(dval));
+      } else {
+        str_val = std::to_string(dval);
+      }
     } else if (std::holds_alternative<bool>(val)) {
       str_val = std::get<bool>(val) ? "true" : "false";
     }
@@ -428,6 +465,11 @@ private:
         return true;
     }
     return false;
+  }
+
+  static bool evaluate_not_in_list(const std::shared_ptr<Expression> &expr,
+                                    const ValueMap &values) {
+    return !evaluate_in_list(expr, values);
   }
 
   static Value get_value(const std::shared_ptr<Expression> &expr,
