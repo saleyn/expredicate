@@ -26,7 +26,13 @@ $(SO_NAME): $(OBJECTS)
 %.o: %.cpp atree.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 
-clean:
-	rm -f $(OBJECTS) $(SO_NAME)
+benchmark: benchmark.cpp atree.h atree_bytecode.h
+	$(CXX) $(CXXFLAGS) -o benchmark $< -lstdc++
 
-.PHONY: all clean
+run-benchmark: benchmark
+	./benchmark
+
+clean:
+	rm -f $(OBJECTS) $(SO_NAME) benchmark
+
+.PHONY: all clean run-benchmark benchmark
