@@ -7,7 +7,7 @@ defmodule Atree.MixProject do
       version:         "0.1.0",
       elixir:          "~> 1.14",
       start_permanent: Mix.env() == :prod,
-      elixirc_paths:   ["lib"],
+      elixirc_paths:   elixirc_paths(Mix.env()),
       compilers:       [:elixir_make] ++ Mix.compilers(),
       deps:            deps(),
       docs:            docs(),
@@ -15,6 +15,9 @@ defmodule Atree.MixProject do
       make_env:        %{"MIX_ENV" => to_string(Mix.env())}
     ]
   end
+
+  defp elixirc_paths(:prod), do: ["lib"]
+  defp elixirc_paths(_), do: ["lib", "examples"]
 
   def application do
     [
