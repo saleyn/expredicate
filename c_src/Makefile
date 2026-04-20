@@ -1,4 +1,4 @@
-.PHONY: all clean
+.PHONY: all clean run-benchmark benchmark
 
 # Get the Erlang root directory
 ERL_ROOT = $(shell erl -eval 'io:format("~s", [code:root_dir()])' -s init stop -noshell)
@@ -9,7 +9,7 @@ CXXFLAGS = -O2 -std=c++17 -fPIC -Wall -Wextra
 CPPFLAGS = -I$(ERL_INCLUDE)
 
 # Source files
-SOURCES = atree_nif.cpp
+SOURCES = atree_nif_new.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 
 # Output shared library
@@ -23,7 +23,7 @@ $(SO_NAME): $(OBJECTS)
 	@mkdir -p $(PRIV_DIR)
 	$(CXX) -shared $(CXXFLAGS) -o $@ $^
 
-%.o: %.cpp atree.h
+%.o: %.cpp atree.h atree_bytecode.h atree_engine_wrapper.h
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 
 benchmark: benchmark.cpp atree.h atree_bytecode.h
@@ -34,5 +34,3 @@ run-benchmark: benchmark
 
 clean:
 	rm -f $(OBJECTS) $(SO_NAME) benchmark
-
-.PHONY: all clean run-benchmark benchmark

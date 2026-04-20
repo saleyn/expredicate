@@ -29,6 +29,7 @@ defmodule Atree do
   @dialyzer {:nowarn_function,
              [
                {:new,       0},
+               {:new,       1},
                {:insert,    3},
                {:insert!,   3},
                {:remove,    2},
@@ -47,9 +48,27 @@ defmodule Atree do
   end
 
   @doc """
-  Create a new rule tree.
+  Create a new rule tree with optional engine selection.
 
-  Returns a reference to a new empty rule tree.
+  Create a new empty rule tree. Optionally specify which expression engine to use.
+
+  ## Parameters
+
+  - `options`: Optional keyword list or map controlling behavior:
+    - `:engine` - `:parser` (default) or `:bytecode`
+
+  ## Engine Selection
+
+  - **`:parser`** (default): Custom recursive descent parser
+    - Better for typical workloads (insert, then evaluate once per query)
+    - Simpler implementation, easier to maintain
+    - ~1.24 μs evaluation time per rule
+
+  - **`:bytecode`**: Stack-based virtual machine
+    - Better for high-volume streaming workloads
+    - Evaluates pre-compiled bytecode (23% faster than parser)
+    - Use when: insert rules once, evaluate millions of times
+    - ~0.95 μs evaluation time per rule
 
   ## Examples
 
@@ -57,9 +76,28 @@ defmodule Atree do
       iex> is_reference(tree)
       true
 
+  With engine selection:
+
+      iex> tree = Atree.new(engine: :bytecode)
+      iex> is_reference(tree)
+      true
+
+  With map options:
+
+      iex> tree = Atree.new(%{engine: :bytecode})
+      iex> is_reference(tree)
+      true
+
   """
   @spec new() :: reference()
-  def new do
+  @spec new(keyword() | map()) :: reference()
+  def new(), do: new(%{})
+
+  def new(options) when is_list(options) do
+    new(Map.new(options))
+  end
+
+  def new(_options) do
     :erlang.nif_error("NIF not loaded")
   end
 
