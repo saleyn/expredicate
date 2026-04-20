@@ -1,0 +1,25 @@
+# Elixir
+/_build/
+/deps/
+/doc/
+/erl_crash.dump
+.DS_Store
+*.beam
+*.plt
+
+# C/C++ build artifacts
+/c_src/.c_src_env.mk
+c_src/*.o
+c_src/*.so
+priv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

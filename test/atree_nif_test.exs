@@ -1,0 +1,325 @@
+defmodule AtreeTest do
+  use ExUnit.Case
+  doctest Atree
+
+  describe "new/0" do
+    test "creates a new rule tree" do
+      tree = Atree.new()
+      assert is_reference(tree)
+    end
+  end
+
+  describe "insert/3" do
+    test "inserts a rule successfully" do
+      tree = Atree.new()
+      {:ok, returned_tree} = Atree.insert(tree, "rule1", "age > 30")
+      assert is_reference(returned_tree)
+    end
+
+    test "returns error for duplicate item ID" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "item1", "age > 30")
+      {:error, :item_exists} = Atree.insert(tree, "item1", "age < 50")
+    end
+
+    test "inserts different item IDs with same rule" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "item1", "age > 30")
+      {:ok, tree} = Atree.insert(tree, "item2", "age > 30")
+      2 = Atree.count(tree)
+    end
+
+    test "accepts various rule formats" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "r1", "age > 30")
+      {:ok, tree} = Atree.insert(tree, "r2", "status == 'active'")
+      {:ok, tree} = Atree.insert(tree, "r3", "status != 'deleted'")
+      {:ok, tree} = Atree.insert(tree, "r4", "age > 30 and status == 'active'")
+      {:ok, tree} = Atree.insert(tree, "r5", "age < 25 or premium == true")
+      {:ok, tree} = Atree.insert(tree, "r6", "brand in ['Apple', 'Samsung']")
+      6 = Atree.count(tree)
+    end
+  end
+
+  describe "match/2" do
+    setup do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "under_30", "age < 30")
+      {:ok, tree} = Atree.insert(tree, "over_30", "age > 30")
+      {:ok, tree} = Atree.insert(tree, "active", "status == 'active'")
+      {:ok, tree} = Atree.insert(tree, "premium", "status == 'premium'")
+      [tree: tree]
+    end
+
+    test "matches rules against value map", %{tree: tree} do
+      values = %{"age" => 35, "status" => "active"}
+      matches = Atree.match(tree, values)
+      assert Enum.sort(matches) == ["active", "over_30"]
+    end
+
+    test "returns empty list when no rules match", %{tree: tree} do
+      values = %{"age" => 30, "status" => "inactive"}
+      matches = Atree.match(tree, values)
+      assert matches == []
+    end
+
+    test "matches all rules" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "r1", "age > 30")
+      {:ok, tree} = Atree.insert(tree, "r2", "age > 25")
+      {:ok, tree} = Atree.insert(tree, "r3", "age > 20")
+      matches = Atree.match(tree, %{"age" => 40})
+      assert Enum.sort(matches) == ["r1", "r2", "r3"]
+    end
+
+    test "handles string values" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "samsung", "brand == 'Samsung'")
+      {:ok, tree} = Atree.insert(tree, "lg", "brand == 'LG'")
+      matches = Atree.match(tree, %{"brand" => "Samsung"})
+      assert matches == ["samsung"]
+    end
+
+    test "handles boolean values" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "premium", "is_premium == true")
+      {:ok, tree} = Atree.insert(tree, "not_premium", "is_premium == false")
+      matches = Atree.match(tree, %{"is_premium" => true})
+      assert matches == ["premium"]
+    end
+
+    test "handles floating point comparisons" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "high", "rating > 4.5")
+      {:ok, tree} = Atree.insert(tree, "medium", "rating > 3.0")
+      matches = Atree.match(tree, %{"rating" => 4.7})
+      assert Enum.sort(matches) == ["high", "medium"]
+    end
+  end
+
+  describe "remove/2" do
+    test "removes an existing item" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "item1", "age > 30")
+      {:ok, tree} = Atree.remove(tree, "item1")
+      0 = Atree.count(tree)
+    end
+
+    test "returns error for non-existent item" do
+      tree = Atree.new()
+      {:error, :not_found} = Atree.remove(tree, "nonexistent")
+    end
+
+    test "can reinsert after removal" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "item1", "age > 30")
+      {:ok, tree} = Atree.remove(tree, "item1")
+      {:ok, tree} = Atree.insert(tree, "item1", "age < 25")
+      1 = Atree.count(tree)
+    end
+  end
+
+  describe "logical operators" do
+    test "matches AND operator" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "match", "age > 30 and status == 'active'")
+
+      matches1 = Atree.match(tree, %{"age" => 40, "status" => "active"})
+      assert matches1 == ["match"]
+
+      matches2 = Atree.match(tree, %{"age" => 40, "status" => "inactive"})
+      assert matches2 == []
+
+      matches3 = Atree.match(tree, %{"age" => 20, "status" => "active"})
+      assert matches3 == []
+    end
+
+    test "matches OR operator" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "match", "status == 'vip' or balance > 5000")
+
+      matches1 = Atree.match(tree, %{"status" => "vip", "balance" => 100})
+      assert matches1 == ["match"]
+
+      matches2 = Atree.match(tree, %{"status" => "regular", "balance" => 6000})
+      assert matches2 == ["match"]
+
+      matches3 = Atree.match(tree, %{"status" => "regular", "balance" => 100})
+      assert matches3 == []
+    end
+
+    test "matches NOT operator" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "match", "not suspended")
+
+      matches1 = Atree.match(tree, %{"suspended" => false})
+      assert matches1 == ["match"]
+
+      matches2 = Atree.match(tree, %{"suspended" => true})
+      assert matches2 == []
+    end
+
+    test "matches IN operator" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "match", "brand in ['Apple', 'Samsung']")
+
+      matches1 = Atree.match(tree, %{"brand" => "Apple"})
+      assert matches1 == ["match"]
+
+      matches2 = Atree.match(tree, %{"brand" => "Samsung"})
+      assert matches2 == ["match"]
+
+      matches3 = Atree.match(tree, %{"brand" => "LG"})
+      assert matches3 == []
+    end
+
+    test "handles complex expressions" do
+      tree = Atree.new()
+
+      {:ok, tree} =
+        Atree.insert(tree, "match", "(age > 30 and age < 65) and status == 'employed'")
+
+      matches1 = Atree.match(tree, %{"age" => 45, "status" => "employed"})
+      assert matches1 == ["match"]
+
+      matches2 = Atree.match(tree, %{"age" => 25, "status" => "employed"})
+      assert matches2 == []
+    end
+  end
+
+  describe "all_items/1" do
+    test "returns all item IDs" do
+      tree  = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "a", "age > 30")
+      {:ok, tree} = Atree.insert(tree, "b", "age < 25")
+      {:ok, tree} = Atree.insert(tree, "c", "age == 30")
+      items = Atree.all_items(tree)
+      assert Enum.sort(items) == ["a", "b", "c"]
+    end
+
+    test "returns empty list for empty tree" do
+      tree  = Atree.new()
+      items = Atree.all_items(tree)
+      assert items == []
+    end
+  end
+
+  describe "count/1" do
+    test "returns 0 for empty tree" do
+      tree = Atree.new()
+      0 = Atree.count(tree)
+    end
+
+    test "returns correct count" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "a", "true")
+      {:ok, tree} = Atree.insert(tree, "b", "true")
+      {:ok, tree} = Atree.insert(tree, "c", "true")
+      3 = Atree.count(tree)
+    end
+
+    test "decreases after removal" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "a", "true")
+      {:ok, tree} = Atree.insert(tree, "b", "true")
+      {:ok, tree} = Atree.remove(tree, "a")
+      1 = Atree.count(tree)
+    end
+  end
+
+  describe "clear/1" do
+    test "clears all items" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "a", "true")
+      {:ok, tree} = Atree.insert(tree, "b", "true")
+      :ok = Atree.clear(tree)
+      0 = Atree.count(tree)
+    end
+  end
+
+  describe "empty/1" do
+    test "returns true for empty tree" do
+      tree = Atree.new()
+      assert Atree.empty(tree) == true
+    end
+
+    test "returns false for non-empty tree" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "a", "true")
+      assert Atree.empty(tree) == false
+    end
+
+    test "returns true after clearing" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "a", "true")
+      :ok = Atree.clear(tree)
+      assert Atree.empty(tree) == true
+    end
+  end
+
+  describe "exists/2" do
+    test "returns true for existing item" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "item1", "age > 30")
+      assert Atree.exists(tree, "item1") == true
+    end
+
+    test "returns false for non-existent item" do
+      tree = Atree.new()
+      assert Atree.exists(tree, "nonexistent") == false
+    end
+
+    test "returns false after removal" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "item1", "age > 30")
+      {:ok, tree} = Atree.remove(tree, "item1")
+      assert Atree.exists(tree, "item1") == false
+    end
+  end
+
+  describe "comparison operators" do
+    test "greater than operator" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "r", "value > 10")
+      m1 = Atree.match(tree, %{"value" => 15})
+      m2 = Atree.match(tree, %{"value" => 10})
+      m3 = Atree.match(tree, %{"value" => 5})
+      assert m1 == ["r"] and m2 == [] and m3 == []
+    end
+
+    test "less than operator" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "r", "value < 10")
+      m1 = Atree.match(tree, %{"value" => 5})
+      m2 = Atree.match(tree, %{"value" => 10})
+      m3 = Atree.match(tree, %{"value" => 15})
+      assert m1 == ["r"] and m2 == [] and m3 == []
+    end
+
+    test "greater or equal operator" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "r", "value >= 10")
+      m1 = Atree.match(tree, %{"value" => 15})
+      m2 = Atree.match(tree, %{"value" => 10})
+      m3 = Atree.match(tree, %{"value" => 5})
+      assert m1 == ["r"] and m2 == ["r"] and m3 == []
+    end
+
+    test "less or equal operator" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "r", "value <= 10")
+      m1 = Atree.match(tree, %{"value" => 5})
+      m2 = Atree.match(tree, %{"value" => 10})
+      m3 = Atree.match(tree, %{"value" => 15})
+      assert m1 == ["r"] and m2 == ["r"] and m3 == []
+    end
+
+    test "not equal operator" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "r", "status != 'deleted'")
+      m1 = Atree.match(tree, %{"status" => "active"})
+      m2 = Atree.match(tree, %{"status" => "deleted"})
+      assert m1 == ["r"] and m2 == []
+    end
+  end
+end
