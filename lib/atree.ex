@@ -44,7 +44,7 @@ defmodule Atree do
              ]}
 
   def load_nifs do
-    nif_path = :filename.join(:code.priv_dir(:atree), ~c"atree")
+    nif_path = :filename.join(:code.priv_dir(:exatree), ~c"atree")
     :erlang.load_nif(nif_path, 0)
   end
 

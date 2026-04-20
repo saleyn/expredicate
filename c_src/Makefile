@@ -9,7 +9,7 @@ CXXFLAGS = -O2 -std=c++17 -fPIC -Wall -Wextra
 CPPFLAGS = -I$(ERL_INCLUDE)
 
 # Source files
-SOURCES = atree_nif_new.cpp
+SOURCES = atree_nif.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 
 # Output shared library
