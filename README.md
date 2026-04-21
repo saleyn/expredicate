@@ -1,6 +1,6 @@
 # Atree
 
-[![build](https://github.com/saleyn/exatree-rules/actions/workflows/ci.yml/badge.svg)](https://github.com/saleyn/exatree-rules/actions/workflows/build.yml)
+[![build](https://github.com/saleyn/exatree-rules/actions/workflows/build.yml/badge.svg)](https://github.com/saleyn/exatree-rules/actions/workflows/build.yml)
 [![Hex.pm](https://img.shields.io/hexpm/v/exatree-rules.svg)](https://hex.pm/packages/exatree-rules)
 [![Hex.pm](https://img.shields.io/hexpm/dt/exatree-rules.svg)](https://hex.pm/packages/exatree-rules)
 
