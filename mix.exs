@@ -8,7 +8,6 @@ defmodule Atree.MixProject do
       elixir:          "~> 1.14",
       start_permanent: Mix.env() == :prod,
       elixirc_paths:   elixirc_paths(Mix.env()),
-      compilers:       [:elixir_make] ++ Mix.compilers(),
       deps:            deps(),
       docs:            docs(),
       package:         package(),
@@ -28,9 +27,8 @@ defmodule Atree.MixProject do
 
   defp deps do
     [
-      {:elixir_make, "~> 0.8",  runtime: false},
-      {:ex_doc,      "~> 0.30", only: :dev,     runtime: false},
-      {:exalign,     "~> 0.1",  only: :dev}
+      {:ex_doc,  "~> 0.30", only: :dev, runtime: false},
+      {:exalign, "~> 0.1",  only: :dev, runtime: false}
     ]
   end
 

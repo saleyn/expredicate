@@ -1,30 +1,64 @@
 .PHONY: all clean help run-benchmark benchmark run-benchmark-overhead run-benchmark-statistical benchmark-overhead benchmark-statistical
 
-# Get the Erlang root directory
-ERL_ROOT = $(shell erl -eval 'io:format("~s", [code:root_dir()])' -s init stop -noshell)
-ERL_INCLUDE = $(ERL_ROOT)/usr/include
+PROJECT   ?= atree
+PROJECT   := $(strip $(PROJECT))
+CURDIR    := $(shell pwd)
+BASEDIR   := $(abspath $(dir $(CURDIR)))
 
-# Compiler flags
-CXXFLAGS = -O2 -std=c++17 -fPIC -Wall -Wextra
-CPPFLAGS = -I$(ERL_INCLUDE)
+# Get the Erlang root directory
+ERL_CXXFLAGS ?= $(shell erl -noshell -noinput -eval "io:format(\"-I~ts/usr/include\", [code:root_dir()]), halt(0).")
+ERL_LDFLAGS  ?= $(shell erl -noshell -noinput -eval "io:format(\"-L~ts\", [code:lib_dir(erl_interface, lib)]), halt(0).")
+
+DEBUG     ?= 0
+NIF_DEBUG ?= $(DEBUG)
+
+CXX       ?= g++
+CXX_VSN   ?= $(shell $(CXX) --version | sed -n '1s/^[^0-9]\+\([0-9]\+\)\(.[0-9-]\)\+.*$$/\1/p')
+
+ifeq ($(NIF_DEBUG),0)
+  OPTIMIZE = -O3 -DNDEBUG
+else
+  OPTIMIZE = -O0 -g
+endif
+
+UNAME_SYS  := $(shell uname -s)
+ifeq ($(UNAME_SYS),Linux)
+  ifeq ($(shell gcc -dM -E - </dev/null | awk '/__AVX2__/ { print $$3 }'),1)
+    CXXFLAGS ?= -mavx2
+  endif
+else ifeq ($(UNAME_SYS),Darwin)
+  CXXFLAGS ?= -fPIE
+  LDFLAGS  += -flat_namespace -undefined suppress
+else ifeq ($(UNAME_SYS),FreeBSD)
+  ifeq ($(shell gcc -dM -E - </dev/null | awk '/__AVX2__/ { print $$3 }'),1)
+    CXXFLAGS ?= -mavx2
+  endif
+endif
+
+ADD_FLAGS  += -fPIC -finline-functions -Wall -std=c++20
+CXXFLAGS   += $(ADD_FLAGS) $(OPTIMIZE) $(ERL_CXXFLAGS)
+LDFLAGS    += $(ERL_LDFLAGS) -lei -shared
+
+# Output shared library
+SRC_DIR     = $(CURDIR)
+PRIV_DIR   ?= $(if $(REBAR_BARE_COMPILER_OUTPUT_DIR),$(REBAR_BARE_COMPILER_OUTPUT_DIR),$(BASEDIR))/priv
+SO_OUTPUT  ?= $(PRIV_DIR)/$(PROJECT).so
 
 # Source files
 SOURCES = atree_nif.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 
-# Output shared library
-SO_NAME = ../priv/atree.so
-PRIV_DIR = ../priv
-
 # Targets
-all: $(SO_NAME)
+all: $(SO_OUTPUT)
 
-$(SO_NAME): $(OBJECTS)
-	@mkdir -p $(PRIV_DIR)
-	$(CXX) -shared $(CXXFLAGS) -o $@ $^
+$(SO_OUTPUT): $(OBJECTS) $(PRIV_DIR)
+	$(CXX) -shared $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJECTS)
 
 %.o: %.cpp atree.h atree_bytecode.h atree_engine_wrapper.h
-	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(PRIV_DIR):
+	@mkdir -p $@
 
 benchmark: benchmark.cpp atree.h atree_bytecode.h
 	$(CXX) $(CXXFLAGS) -o benchmark $< -lstdc++
@@ -62,4 +96,4 @@ help:
 	@echo "Example: make run-benchmark-statistical"
 
 clean:
-	rm -f $(OBJECTS) $(SO_NAME) benchmark benchmark-overhead benchmark-statistical
+	rm -f $(OBJECTS) $(SO_OUTPUT) benchmark benchmark-overhead benchmark-statistical

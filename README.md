@@ -1,8 +1,8 @@
 # Atree
 
-[![build](https://github.com/saleyn/exatree/actions/workflows/ci.yml/badge.svg)](https://github.com/saleyn/exatree/actions/workflows/ci.yml)
-[![Hex.pm](https://img.shields.io/hexpm/v/exatree.svg)](https://hex.pm/packages/exatree)
-[![Hex.pm](https://img.shields.io/hexpm/dt/exatree.svg)](https://hex.pm/packages/exatree)
+[![build](https://github.com/saleyn/exatree-rules/actions/workflows/ci.yml/badge.svg)](https://github.com/saleyn/exatree-rules/actions/workflows/build.yml)
+[![Hex.pm](https://img.shields.io/hexpm/v/exatree-rules.svg)](https://hex.pm/packages/exatree-rules)
+[![Hex.pm](https://img.shields.io/hexpm/dt/exatree-rules.svg)](https://hex.pm/packages/exatree-rules)
 
 Rule-based matching engine for Elixir using C++ NIFs. Store opaque items with 
 associated boolean expression rules, then match incoming value maps against all 
