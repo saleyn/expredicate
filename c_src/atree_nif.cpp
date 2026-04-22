@@ -59,26 +59,22 @@ static void rule_tree_destructor(ErlNifEnv* env, void* obj) {
  * Helper: Convert Erlang value to C++ Value
  */
 static Value erlang_to_value(ErlNifEnv* env, ERL_NIF_TERM term) {
+    // Try int64_t first
+    ErlNifSInt64 i64v;
+    if (enif_get_int64(env, term, &i64v)) {
+        return Value(static_cast<int64_t>(i64v));
+    }
+
     double dv;
     if (enif_get_double(env, term, &dv)) {
         return Value(dv);
-    }
-
-    int iv;
-    if (enif_get_int(env, term, &iv)) {
-        return Value(static_cast<double>(iv));
-    }
-
-    long lv;
-    if (enif_get_long(env, term, &lv)) {
-        return Value(static_cast<double>(lv));
     }
 
     unsigned len;
     if (enif_get_string_length(env, term, &len, ERL_NIF_LATIN1)) {
         std::string str(len + 1, '\0');
         enif_get_string(env, term, &str[0], len + 1, ERL_NIF_LATIN1);
-        // Remove the null terminator from string (it' s already there at position len)
+        // Remove the null terminator from string (it's already there at position len)
         return Value(std::string(str.c_str(), len));
     }
 
@@ -147,10 +143,28 @@ static ERL_NIF_TERM nif_new(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
         return enif_make_badarg(env);
     }
     
-    // Create the RuleTree on the heap and store its pointer in the resource
-    // Note: argc and argv can be used for options in the future
-    // Currently ignoring options - argv[0] would contain the options map if argc > 0
-    *resource_mem = new RuleTree();
+    // Parse options if provided (argv[0] contains the options map)
+    bool nocase = false;
+    if (argc > 0) {
+        // Check if argv[0] is a map with 'nocase' key
+        int arity;
+        if (enif_get_map_size(env, argv[0], (size_t*)&arity) >= 0) {
+            ERL_NIF_TERM nocase_key = enif_make_atom(env, "nocase");
+            ERL_NIF_TERM nocase_val;
+            if (enif_get_map_value(env, argv[0], nocase_key, &nocase_val)) {
+                // Check if the value is true
+                if (enif_is_atom(env, nocase_val)) {
+                    char atom_name[256];
+                    if (enif_get_atom(env, nocase_val, atom_name, sizeof(atom_name), ERL_NIF_LATIN1) > 0) {
+                        nocase = (strcmp(atom_name, "true") == 0);
+                    }
+                }
+            }
+        }
+    }
+    
+    // Create the RuleTree on the heap with the nocase option
+    *resource_mem = new RuleTree(nocase);
     
     // Create the Erlang resource term
     ERL_NIF_TERM result = enif_make_resource(env, resource_mem);

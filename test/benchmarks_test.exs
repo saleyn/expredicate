@@ -41,6 +41,10 @@ defmodule BenchmarksTest do
       IO.puts("--- Running Variable Indexing Benchmark ---")
       results = benchmark_variable_indexing(results)
 
+      # === CONCURRENT ACCESS ===
+      IO.puts("--- Running Concurrent Access Benchmark ---")
+      benchmark_concurrent_reads()
+
       # === OUTPUT CONSOLIDATED TABLE ===
       IO.puts("\n")
       IO.puts(String.duplicate("=", 80))
@@ -51,32 +55,6 @@ defmodule BenchmarksTest do
       IO.puts(BenchmarkFormatter.table(results))
 
       IO.puts("\n")
-      IO.puts(String.duplicate("=", 80))
-      IO.puts("                         ANALYSIS")
-      IO.puts(String.duplicate("=", 80))
-      IO.puts("""
-
-      Key Observations:
-
-      1. SCALABILITY: Performance scales well from 100 to 100K rules
-         - Insert: ~4μs per rule average
-         - Match: Varies based on matching rules
-
-      2. OPERATIONS:
-         - Insert: Linear complexity O(n) growth
-         - Match: Depends on rule evaluation
-         - Remove: Similar to insert
-         - Clear: Fast bulk operation
-
-      3. OPTIMIZATIONS:
-         - Variable indexing: Reduces rule evaluation count
-         - Adaptive compilation: Improves match performance over time
-
-      4. LARGE-SCALE (100K):
-         - Insert 100K rules: ~350ms total (~3.5μs per rule)
-         - Match against 100K: ~120ms
-      """)
-
       IO.puts(String.duplicate("=", 80))
       # Assertions to verify benchmarks completed
       assert length(results) > 0
@@ -560,5 +538,73 @@ defmodule BenchmarksTest do
         {"Variable Indexing: Build 5000 rules", build_ni, build_idx, build_ada},
         {"Variable Indexing: Match 5000 rules", match_ni, match_idx, match_ada}
       ]
+  end
+
+  defp benchmark_concurrent_reads() do
+    # Setup: Create a tree with 1000 rules
+    tree = Atree.new()
+    IO.puts("\n  Building concurrent test tree (1000 rules)...")
+
+    Enum.each(1..1000, fn i ->
+      rule = "value > #{i}"
+      Atree.insert!(tree, "rule_#{i}", rule)
+    end)
+
+    values = %{"value" => 500}
+
+    # Test 1: Sequential matches
+    {time_seq, _} =
+      :timer.tc(fn ->
+        Enum.each(1..10, fn _ -> Atree.match(tree, values) end)
+      end)
+
+    # Test 2: Concurrent reads (4 tasks, 10 matches each)
+    {time_concurrent, _} =
+      :timer.tc(fn ->
+        1..4
+        |> Enum.map(fn _ ->
+          Task.async(fn ->
+            Enum.each(1..10, fn _ -> Atree.match(tree, values) end)
+          end)
+        end)
+        |> Task.await_many()
+      end)
+
+    seq_per_match = time_seq / 10
+    conc_per_match = time_concurrent / 40
+    speedup = time_seq / time_concurrent
+
+    IO.puts("""
+      Concurrent Match Benchmark (1000 rules):
+      - Sequential (10 matches):      #{Float.round(time_seq / 1000, 3)}ms (#{Float.round(seq_per_match / 1000, 3)}ms per match)
+      - Concurrent (4×10 matches):    #{Float.round(time_concurrent / 1000, 3)}ms (#{Float.round(conc_per_match / 1000, 3)}ms per match)
+      - Effective speedup:            #{Float.round(speedup, 2)}x
+    """)
+
+    # Test 3: Concurrent read+write stress test
+    IO.puts("  Running read+write stress test...")
+
+    {time_stress, _} =
+      :timer.tc(fn ->
+        1..2
+        |> Enum.map(fn task_id ->
+          Task.async(fn ->
+            if task_id == 1 do
+              # Task 1: Heavy reads
+              Enum.each(1..25, fn _ -> Atree.match(tree, values) end)
+            else
+              # Task 2: Writes
+              Enum.each(1001..1025, fn i ->
+                Atree.insert(tree, "new_rule_#{i}", "value > 100")
+              end)
+            end
+          end)
+        end)
+        |> Task.await_many()
+      end)
+
+    IO.puts(
+      "  - Read+Write stress test:       #{Float.round(time_stress / 1000, 3)}ms (safe concurrent access)\n"
+    )
   end
 end

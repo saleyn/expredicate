@@ -5,6 +5,7 @@
 /tmp/
 /doc/
 /erl_crash.dump
+/c_src/xxhash.hpp
 .cover
 .DS_Store
 *.beam

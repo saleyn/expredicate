@@ -51,12 +51,14 @@ defmodule Atree do
   @doc """
   Create a new rule tree with optional engine selection.
 
-  Create a new empty rule tree. Optionally specify which expression engine to use.
+  Create a new empty rule tree. Optionally specify which expression engine to use
+  and whether to use case-insensitive string comparisons.
 
   ## Parameters
 
   - `options`: Optional keyword list or map controlling behavior:
     - `:engine` - `:parser` (default) or `:bytecode`
+    - `:nocase` - `true` for case-insensitive string comparisons, `false` (default) for case-sensitive
 
   ## Engine Selection
 
@@ -71,6 +73,18 @@ defmodule Atree do
     - Use when: insert rules once, evaluate millions of times
     - ~0.95 μs evaluation time per rule
 
+  ## Case Sensitivity
+
+  When `:nocase` is `true`, all string comparisons are case-insensitive:
+  - `status == 'Active'` will match `status == 'active'` or `status == 'ACTIVE'`
+  - `brand in ['Samsung', 'LG']` will match `'samsung'` or `'lg'`
+  - String comparison operators: `==`, `!=`, list membership (`in`, `not in`, `any in`, `any not in`)
+
+  Does **not** affect:
+  - Variable names (identifiers): still case-sensitive
+  - Operator keywords: still case-sensitive
+  - Numeric and boolean values: not affected
+
   ## Examples
 
       iex> tree = Atree.new()
@@ -83,9 +97,21 @@ defmodule Atree do
       iex> is_reference(tree)
       true
 
+  With case-insensitive matching:
+
+      iex> tree = Atree.new(nocase: true)
+      iex> is_reference(tree)
+      true
+
+  With multiple options:
+
+      iex> tree = Atree.new(engine: :bytecode, nocase: true)
+      iex> is_reference(tree)
+      true
+
   With map options:
 
-      iex> tree = Atree.new(%{engine: :bytecode})
+      iex> tree = Atree.new(%{engine: :bytecode, nocase: true})
       iex> is_reference(tree)
       true
 
@@ -129,6 +155,7 @@ defmodule Atree do
       - `"tv_brand in ['Samsung', 'LG']"`
       - `"tv_brand not in ['Samsung', 'LG']"`
       - `"not premium or age < 18"`
+      - `"tags any in ['new', 'sale', 'special']"`
 
   ## Examples
 
@@ -181,10 +208,10 @@ defmodule Atree do
   ## Examples
 
       iex> tree = Atree.new()
-      iex> {:ok, tree} = Atree.insert(tree, "item1", "age > 30")
-      iex> {:ok, tree} = Atree.remove(tree, "item1")
-      iex> is_reference(tree)
+      iex> Atree.insert!(tree, "item1", "age > 30") |> Atree.exists("item1")
       true
+      iex> Atree.remove!(tree, "item1") |> Atree.exists("item1")
+      false
       iex> {:error, :not_found} = Atree.remove(tree, "nonexistent")
       {:error, :not_found}
 
@@ -192,6 +219,28 @@ defmodule Atree do
   @spec remove(reference(), String.t()) :: {:ok, reference()} | {:error, :not_found}
   def remove(_tree, item_id) when is_binary(item_id) do
     :erlang.nif_error("NIF not loaded")
+  end
+
+  @doc """
+  Remove an item from the tree, raising on error.
+
+  Returns the tree on successful removal, or raises `ArgumentError`
+  if the item ID does not exist.
+
+  ## Examples
+
+      iex> tree = Atree.new()
+      iex> Atree.insert!(tree, "item1", "age > 30") |> Atree.exists("item1")
+      true
+      iex> Atree.remove!(tree, "item1") |> Atree.exists("item1")
+      false
+
+  """
+  def remove!(tree, item_id) do
+    case remove(tree, item_id) do
+      {:ok,    updated_tree} -> updated_tree
+      {:error, reason}       -> raise ArgumentError, "remove! failed: #{inspect(reason)}"
+    end
   end
 
   @doc """

@@ -32,23 +32,24 @@ end
 
 ```elixir
 # Create a new rule tree
-{:ok, tree} = Atree.new()
+tree = Atree.new()
 
 # Insert items with rules
 {:ok, tree} = Atree.insert(tree, "rule1", "age > 30 and status == 'active'")
-{:ok, tree} = Atree.insert(tree, "rule2", "tv_brand in ['Samsung', 'LG']")
+{:ok, tree} = Atree.insert(tree, "rule2", "tv_brand any in ['Samsung', 'LG']")
 {:ok, tree} = Atree.insert(tree, "rule3", "not premium or age < 18")
 
 # Match a value map against all rules
+# Variables can be scalars or lists
 values = %{
   "age" => 40,
   "status" => "active",
-  "tv_brand" => "Samsung",
+  "tv_brand" => ["Samsung", "Sony"],  # List variable
   "premium" => false
 }
 
-{:ok, matched} = Atree.match(tree, values)
-# => {:ok, ["rule1", "rule2"]}
+matched = Atree.match(tree, values)
+# => ["rule1", "rule2"] (rule2 matches: "Samsung" is in ['Samsung', 'LG'])
 ```
 
 ## Rule Syntax
@@ -68,14 +69,18 @@ Rules are boolean expressions with the following operators:
 - `or` - At least one true: `status == 'vip' or balance > 5000`
 - `not` - Negation: `not suspended`
 
-### Membership
-- `in` - Check membership: `brand in ['Apple', 'Samsung', 'LG']`
+### List Membership
+- `in [...]` / `all in [...]` - All list items in RHS list: `id in ['A1', 'A2']` or `tags all in ['important', 'urgent']`
+- `not in [...]` / `all not in [...]` - All list items not in RHS list: `status not in ['deleted', 'archived']`
+- `any in [...]` - Any list item in RHS list: `tags any in ['vip', 'important']`
+- `any not in [...]` - Any list item not in RHS list: `blocked_codes any not in ['TEMP', 'REVIEW']`
 
 ### Values
 - Numbers: `42`, `3.14` (integers and floats)
 - Strings: `'text'` or `"text"` (single or double quoted)
+- Strings (from variables): Can be lists where each element is tested
 - Booleans: `true`, `false`
-- Variables: Any identifier (matched from value map)
+- Variables: Any identifier (matched from value map, can be scalar or list)
 
 ### Grouping
 - Parentheses: `(age > 30 and age < 65)`
@@ -84,43 +89,48 @@ Rules are boolean expressions with the following operators:
 
 ### Tree Management
 
-- `new() :: {:ok, reference}`
+- `new() :: reference`
   - Create a new empty rule tree
+  - Optional parameters:
+    - `:engine` - `:parser` (default) or `:bytecode`
+    - `:nocase` - `true` for case-insensitive string comparisons, `false` (default)
+  - Example: `new(engine: :bytecode, nocase: true)` - use bytecode engine with case-insensitive matching
 
 - `clear(tree) :: :ok`
   - Clear all items from the tree
 
-- `empty(tree) :: {:ok, boolean}`
+- `empty(tree) :: boolean`
   - Check if tree is empty
 
-- `count(tree) :: {:ok, non_neg_integer}`
+- `count(tree) :: non_neg_integer`
   - Get the number of items in the tree
 
 ### Item Operations
 
-- `insert(tree, item_id, rule) :: {:ok, tree} | {:error, :item_exists}`
+- `insert(tree, item, rule) :: {:ok, reference()} | {:error, :item_exists}`
   - Insert an item with a rule
-  - `item_id`: String identifier (must be unique)
+  - `item`: String identifier or tuple `{item_id, metadata}` (must be unique)
   - `rule`: Boolean expression rule string
-  - Returns error if item_id already exists
+  - Returns error if item already exists
 
-- `remove(tree, item_id) :: {:ok, tree} | {:error, :not_found}`
+- `remove(tree, item_id) :: {:ok, reference()} | {:error, :not_found}`
   - Remove an item from the tree
   - Returns error if item not found
 
-- `exists(tree, item_id) :: {:ok, boolean}`
+- `exists(tree, item_id) :: boolean`
   - Check if an item exists in the tree
 
 ### Matching
 
-- `match(tree, value_map) :: {:ok, [item_id]} | {:error, :invalid_map}`
+- `match(tree, value_map) :: [item_id]`
   - Match a value map against all rules
   - Returns list of matching item IDs
   - `value_map`: Map with string keys and numeric/string/boolean values
+  - Optional: `match(tree, value_map, options)` with options map (e.g., `result: :metadata`)
 
 ### Introspection
 
-- `all_items(tree) :: {:ok, [item_id]}`
+- `all_items(tree) :: [item_id]`
   - Get all item IDs in the tree
 
 ## Examples
@@ -128,13 +138,13 @@ Rules are boolean expressions with the following operators:
 ### User Segmentation
 
 ```elixir
-{:ok, tree} = Atree.new()
+tree = Atree.new()
 
 # Define user segments
-{:ok, tree} = Atree.insert(tree, "vip", "lifetime_spend > 10000 and account_age > 365")
-{:ok, tree} = Atree.insert(tree, "engaged", "login_count > 50 and days_since_login < 7")
-{:ok, tree} = Atree.insert(tree, "churned", "days_since_login > 90")
-{:ok, tree} = Atree.insert(tree, "trial", "account_age <= 30 and status == 'trial'")
+Atree.insert!(tree, "vip", "lifetime_spend > 10000 and account_age > 365")
+Atree.insert!(tree, "engaged", "login_count > 50 and days_since_login < 7")
+Atree.insert!(tree, "churned", "days_since_login > 90")
+Atree.insert!(tree, "trial", "account_age <= 30 and status == 'trial'")
 
 # Check which segments a user belongs to
 user = %{
@@ -145,23 +155,62 @@ user = %{
   "status" => "active"
 }
 
-{:ok, segments} = Atree.match(tree, user)
-# => {:ok, ["vip", "engaged"]}
+segments = Atree.match(tree, user)
+# => ["vip", "engaged"]
 ```
 
 ### Product Filtering
 
 ```elixir
-{:ok, tree} = Atree.new()
+tree = Atree.new()
 
 {:ok, tree} = Atree.insert(tree, "must_reorder", "stock < 10")
 {:ok, tree} = Atree.insert(tree, "on_sale", "discount > 0")
 {:ok, tree} = Atree.insert(tree, "low_margin", "margin < 10")
+{:ok, tree} = Atree.insert(tree, "restricted", "certifications not in ['FDA', 'CE']")
 
-product = %{"stock" => 5, "discount" => 25, "margin" => 8}
+product = %{"stock" => 5, "discount" => 25, "margin" => 8, "certifications" => ["UL"]}
 
-{:ok, actions} = Atree.match(tree, product)
-# => {:ok, ["must_reorder", "on_sale", "low_margin"]}
+actions = Atree.match(tree, product)
+# => ["must_reorder", "on_sale", "low_margin", "restricted"]
+```
+
+### Tag-Based Rules with List Values
+
+```elixir
+tree = Atree.new()
+
+# Rules for items with multiple tags
+{:ok, tree} = Atree.insert(tree, "urgent", "tags any in ['URGENT', 'CRITICAL']")
+{:ok, tree} = Atree.insert(tree, "safe", "tags all in ['APPROVED', 'TESTED']")
+{:ok, tree} = Atree.insert(tree, "blocked", "tags any in ['BLOCKED', 'HOLD']")
+
+# Match items - variables can contain lists
+item = %{"tags" => ["REVIEWED", "URGENT", "DRAFT"]}
+
+actions = Atree.match(tree, item)
+# => ["urgent"] (has URGENT, but not all tags in ['APPROVED', 'TESTED'])
+```
+
+### Case-Insensitive Matching
+
+```elixir
+# With nocase: true, all string comparisons are case-insensitive
+tree = Atree.new(nocase: true)
+
+{:ok, tree} = Atree.insert(tree, "premium", "status == 'Premium'")
+{:ok, tree} = Atree.insert(tree, "restricted", "country not in ['USA', 'Canada']")
+
+# Rules match regardless of case
+values = %{
+  "status" => "premium",  # lowercase matches 'Premium'
+  "country" => "uk"
+}
+
+matched = Atree.match(tree, values)
+# => ["premium", "restricted"]
+# - "premium" matches because 'premium' == 'Premium' (case-insensitive)
+# - "restricted" matches because "uk" not in ['USA', 'Canada'] (case-insensitive)
 ```
 
 ## Performance Characteristics

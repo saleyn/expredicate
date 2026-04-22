@@ -365,4 +365,123 @@ defmodule AtreeTest do
       assert m1 == ["r"] and m2 == []
     end
   end
+
+  describe "int64_t support" do
+    test "parses and matches integer literals" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "r1", "count == 42")
+      {:ok, tree} = Atree.insert(tree, "r2", "count > 40")
+
+      matches1 = Atree.match(tree, %{"count" => 42})
+      assert Enum.sort(matches1) == ["r1", "r2"]
+
+      matches2 = Atree.match(tree, %{"count" => 50})
+      assert matches2 == ["r2"]
+
+      matches3 = Atree.match(tree, %{"count" => 30})
+      assert matches3 == []
+    end
+
+    test "handles large int64_t values" do
+      tree = Atree.new()
+      large_num = 9_223_372_036_854_775_807  # max int64
+      {:ok, tree} = Atree.insert(tree, "r1", "value == 9223372036854775807")
+      {:ok, tree} = Atree.insert(tree, "r2", "value > 9000000000000000000")
+
+      matches1 = Atree.match(tree, %{"value" => large_num})
+      assert Enum.sort(matches1) == ["r1", "r2"]
+    end
+
+    test "handles negative int64_t values" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "r1", "temp == -40")
+      {:ok, tree} = Atree.insert(tree, "r2", "temp < -30")
+
+      matches1 = Atree.match(tree, %{"temp" => -40})
+      assert Enum.sort(matches1) == ["r1", "r2"]
+
+      matches2 = Atree.match(tree, %{"temp" => -35})
+      assert matches2 == ["r2"]
+
+      matches3 = Atree.match(tree, %{"temp" => 0})
+      assert matches3 == []
+    end
+
+    test "compares int64_t with double" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "higher", "value > 50")
+
+      matches1 = Atree.match(tree, %{"value" => 100})  # int64
+      matches2 = Atree.match(tree, %{"value" => 100.5})  # double
+      matches3 = Atree.match(tree, %{"value" => 25})  # int64
+
+      assert matches1 == ["higher"]
+      assert matches2 == ["higher"]
+      assert matches3 == []
+    end
+
+    test "int64_t equality with mixed numeric types" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "exact", "level == 10")
+
+      # Test int64_t matching
+      matches1 = Atree.match(tree, %{"level" => 10})
+      assert matches1 == ["exact"]
+
+      # Test with double that's equivalent
+      matches2 = Atree.match(tree, %{"level" => 10.0})
+      assert matches2 == ["exact"]
+
+      # Test non-matching
+      matches3 = Atree.match(tree, %{"level" => 11})
+      assert matches3 == []
+    end
+
+    test "int64_t with comparison operators" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "eq", "x == 5")
+      {:ok, tree} = Atree.insert(tree, "ne", "x != 5")
+      {:ok, tree} = Atree.insert(tree, "lt", "x < 5")
+      {:ok, tree} = Atree.insert(tree, "le", "x <= 5")
+      {:ok, tree} = Atree.insert(tree, "gt", "x > 5")
+      {:ok, tree} = Atree.insert(tree, "ge", "x >= 5")
+
+      matches = Atree.match(tree, %{"x" => 5})
+      # At 5: eq, ne, le, ge should match (not lt, not gt)
+      assert "eq" in matches
+      assert "le" in matches
+      assert "ge" in matches
+      assert "lt" not in matches
+      assert "gt" not in matches
+    end
+
+    test "int64_t truthiness in logical expressions" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "truthy", "count")  # non-zero int is truthy
+      {:ok, tree} = Atree.insert(tree, "falsy", "not count")  # zero int is falsy
+
+      matches1 = Atree.match(tree, %{"count" => 1})
+      assert matches1 == ["truthy"]
+
+      matches2 = Atree.match(tree, %{"count" => 0})
+      assert matches2 == ["falsy"]
+
+      matches3 = Atree.match(tree, %{"count" => -1})
+      assert matches3 == ["truthy"]
+    end
+
+    test "int64_t in complex logical expressions" do
+      tree = Atree.new()
+      {:ok, tree} = Atree.insert(tree, "complex", "age > 18 and score >= 100")
+
+      matches1 = Atree.match(tree, %{"age" => 25, "score" => 150})
+      assert matches1 == ["complex"]
+
+      matches2 = Atree.match(tree, %{"age" => 25, "score" => 50})
+      assert matches2 == []
+
+      matches3 = Atree.match(tree, %{"age" => 15, "score" => 150})
+      assert matches3 == []
+    end
+  end
 end

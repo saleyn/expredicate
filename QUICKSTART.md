@@ -117,6 +117,29 @@ iex> :ok = Atree.clear(tree)
 iex> {:ok, true} = Atree.empty(tree)
 ```
 
+## Case-Insensitive Matching (IEx)
+
+With the `:nocase` option, all string comparisons are case-insensitive:
+
+```elixir
+# Create tree with case-insensitive mode
+iex> tree = Atree.new(nocase: true)
+#Reference<0.123456789.0.0>
+
+# Insert rules with uppercase strings
+iex> {:ok, tree} = Atree.insert(tree, "premium", "status == 'Premium'")
+iex> {:ok, tree} = Atree.insert(tree, "usa_only", "country in ['USA', 'CANADA']")
+
+# Match with lowercase values - rules still match
+iex> {:ok, matches} = Atree.match(tree, %{"status" => "premium", "country" => "usa"})
+{:ok, ["premium", "usa_only"]}
+# Note: 'premium' matches 'Premium' and 'usa' matches 'USA' (case-insensitive)
+
+# Combining with other options
+iex> tree = Atree.new(engine: :bytecode, nocase: true)
+#Reference<0.987654321.0.0>
+```
+
 ## Run Examples
 
 ```bash
@@ -182,6 +205,15 @@ iex> Atree.Examples.operators_example()
 "brand in ['Apple', 'Samsung', 'LG']"
 "status in ['active', 'pending', 'vip']"
 "color in ['red', 'blue', 'green']"
+
+# ALL IN / ALL NOT IN - explicit variants (same as in/not in)
+"tags all in ['important', 'urgent']"
+"status all not in ['deleted', 'archived']"
+
+# ANY IN / ANY NOT IN - for list variables
+# Use when variable value is a list (e.g., tags: ["bug", "urgent", "review"])
+"tags any in ['urgent', 'critical']"       # true if ANY tag is urgent or critical
+"blocked_codes any not in ['TEMP', 'HOLD']" # true if ANY code is not TEMP or HOLD
 ```
 
 ### Complex Expressions
@@ -247,6 +279,62 @@ user = %{"role" => "manager", "subscription" => "premium"}
 
 {:ok, perms} = Atree.match(tree, user)
 # => {:ok, ["manager", "premium"]}
+```
+
+### Tag-Based Rules with List Values
+
+```elixir
+{:ok, tree} = Atree.new()
+
+# Rules using list variables (items can have multiple tags)
+{:ok, tree} = Atree.insert(tree, "urgent", "tags any in ['URGENT', 'CRITICAL']")
+{:ok, tree} = Atree.insert(tree, "blocked", "tags any in ['BUG', 'BLOCKER']")
+{:ok, tree} = Atree.insert(tree, "safe", "tags all in ['REVIEWED', 'TESTED']")
+{:ok, tree} = Atree.insert(tree, "standard", "categories not in ['ADULT', '18+']")
+
+# Item with list values
+item = %{
+  "tags" => ["URGENT", "REVIEW", "DRAFT"],
+  "categories" => ["TECH", "NEWS"]
+}
+
+{:ok, matching} = Atree.match(tree, item)
+# => {:ok, ["urgent", "standard"]}
+# Explanation:
+#   - urgent: tag "URGENT" is in ['URGENT', 'CRITICAL'] ✓
+#   - blocked: no tag in ['BUG', 'BLOCKER'] ✗
+#   - safe: not ALL tags in ['REVIEWED', 'TESTED'] ✗
+#   - standard: all categories NOT in ['ADULT', '18+'] ✓
+```
+
+### Case-Insensitive Matching for Real-World Data
+
+Case-insensitive mode is useful when user data comes from different sources with inconsistent capitalization:
+
+```elixir
+# Tree WITH case-insensitive matching
+{:ok, tree_nocase} = Atree.new(nocase: true)
+
+{:ok, tree_nocase} = Atree.insert(tree_nocase, "premium_us", "country == 'USA'")
+{:ok, tree_nocase} = Atree.insert(tree_nocase, "premium_ca", "country == 'CANADA'")
+{:ok, tree_nocase} = Atree.insert(tree_nocase, "vip_status", "status in ['Active', 'Premium']")
+
+# Users with various capitalizations all match correctly
+user1 = %{"country" => "usa", "status" => "active"}
+user2 = %{"country" => "Canada", "status" => "PREMIUM"}
+user3 = %{"country" => "USA", "status" => "Active"}
+
+{:ok, m1} = Atree.match(tree_nocase, user1)  # => {:ok, ["premium_us", "vip_status"]}
+{:ok, m2} = Atree.match(tree_nocase, user2)  # => {:ok, ["premium_ca", "vip_status"]}
+{:ok, m3} = Atree.match(tree_nocase, user3)  # => {:ok, ["premium_us", "vip_status"]}
+
+# Without case-insensitive mode:
+{:ok, tree_case} = Atree.new()  # case-sensitive (default)
+{:ok, tree_case} = Atree.insert(tree_case, "premium_us", "country == 'USA'")
+{:ok, tree_case} = Atree.insert(tree_case, "vip_status", "status in ['Active', 'Premium']")
+
+{:ok, m1_case} = Atree.match(tree_case, user1)  # => {:ok, []} - "usa" != "USA"
+{:ok, m2_case} = Atree.match(tree_case, user2)  # => {:ok, []} - "PREMIUM" != "Active"
 ```
 
 ## Troubleshooting
