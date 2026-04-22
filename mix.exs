@@ -11,12 +11,17 @@ defmodule Atree.MixProject do
       deps:            deps(),
       docs:            docs(),
       package:         package(),
-      make_env:        %{"MIX_ENV" => to_string(Mix.env())}
+      test_coverage:   [
+        output: ".cover",
+        ignore_modules: [Atree],
+        #allow_failure: true,
+        summary: [threshold: 90]
+      ]
     ]
   end
 
   defp elixirc_paths(:prod), do: ["lib"]
-  defp elixirc_paths(_), do: ["lib", "examples"]
+  defp elixirc_paths(_),     do: ["lib", "examples"]
 
   def application do
     [

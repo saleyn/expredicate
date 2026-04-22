@@ -17,7 +17,10 @@ clean:
 test:
 	mix $@
 
+cover:
+	mix test --cover
+
 benchmark:
 	mix test test/benchmarks_test.exs
 
-.PHONY: test deps
+.PHONY: test deps compile benchmark cover

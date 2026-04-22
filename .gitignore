@@ -1,11 +1,11 @@
 # Elixir
 /_build/
 /deps/
-/cover/
 /backup/
 /tmp/
 /doc/
 /erl_crash.dump
+.cover
 .DS_Store
 *.beam
 *.plt
