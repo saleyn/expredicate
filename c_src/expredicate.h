@@ -58,7 +58,7 @@ namespace std {
  * The tree evaluates incoming value maps against all rules to find matches.
  */
 
-namespace atree {
+namespace expredicate {
 
 // Custom hash function for std::string using xxHash C++ wrapper
 // struct XXHashStringHasher {
@@ -943,4 +943,4 @@ private:
   mutable std::shared_mutex rules_mutex;
 };
 
-} // namespace atree
+} // namespace expredicate

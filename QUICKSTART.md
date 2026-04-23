@@ -21,7 +21,7 @@ make --version
 ### 2. Navigate to Project
 
 ```bash
-cd /home/serge/projects/atree-nif
+cd /home/serge/projects/expredicate
 ```
 
 ### 3. Generate Dependencies
@@ -45,7 +45,7 @@ If compilation succeeds, you should see:
 ```
 Compiling C extensions...
 Compiling 2 files (.ex)
-Generated atree_nif app
+Generated expredicate app
 ```
 
 ## Running Tests
@@ -65,7 +65,7 @@ Expected output:
 ```
 Compiling C extensions...
 Compiling 2 files (.ex)
-Generating Atree app
+Generating Expredicate app
 .....................................................
 
 Finished in X.XXs
@@ -83,38 +83,38 @@ In the shell:
 
 ```elixir
 # Create a new rule tree
-iex> {:ok, tree} = Atree.new()
+iex> {:ok, tree} = Expredicate.new()
 {:ok, #Reference<0.123456789.0.0>}
 
 # Insert items with rules
-iex> {:ok, tree} = Atree.insert(tree, "rule1", "age > 30")
+iex> {:ok, tree} = Expredicate.insert(tree, "rule1", "age > 30")
 {:ok, #Reference<0.123456789.0.0>}
 
-iex> {:ok, tree} = Atree.insert(tree, "rule2", "status == 'active'")
+iex> {:ok, tree} = Expredicate.insert(tree, "rule2", "status == 'active'")
 {:ok, #Reference<0.123456789.0.0>}
 
 # Match a value map against all rules
-iex> {:ok, matched} = Atree.match(tree, %{"age" => 35, "status" => "active"})
+iex> {:ok, matched} = Expredicate.match(tree, %{"age" => 35, "status" => "active"})
 {:ok, ["rule1", "rule2"]}
 
 # Check if an item exists
-iex> {:ok, true} = Atree.exists(tree, "rule1")
+iex> {:ok, true} = Expredicate.exists(tree, "rule1")
 
 # Get all items
-iex> {:ok, items} = Atree.all_items(tree)
+iex> {:ok, items} = Expredicate.all_items(tree)
 {:ok, ["rule1", "rule2"]}
 
 # Get count
-iex> {:ok, 2} = Atree.count(tree)
+iex> {:ok, 2} = Expredicate.count(tree)
 
 # Remove an item
-iex> {:ok, tree} = Atree.remove(tree, "rule1")
+iex> {:ok, tree} = Expredicate.remove(tree, "rule1")
 
 # Clear the tree
-iex> :ok = Atree.clear(tree)
+iex> :ok = Expredicate.clear(tree)
 
 # Check if empty
-iex> {:ok, true} = Atree.empty(tree)
+iex> {:ok, true} = Expredicate.empty(tree)
 ```
 
 ## Case-Insensitive Matching (IEx)
@@ -123,20 +123,20 @@ With the `:nocase` option, all string comparisons are case-insensitive:
 
 ```elixir
 # Create tree with case-insensitive mode
-iex> tree = Atree.new(nocase: true)
+iex> tree = Expredicate.new(nocase: true)
 #Reference<0.123456789.0.0>
 
 # Insert rules with uppercase strings
-iex> {:ok, tree} = Atree.insert(tree, "premium", "status == 'Premium'")
-iex> {:ok, tree} = Atree.insert(tree, "usa_only", "country in ['USA', 'CANADA']")
+iex> {:ok, tree} = Expredicate.insert(tree_nocase, "premium", "status == 'Premium'")
+iex> {:ok, tree} = Expredicate.insert(tree_nocase, "usa_only", "country in ['USA', 'CANADA']")
 
 # Match with lowercase values - rules still match
-iex> {:ok, matches} = Atree.match(tree, %{"status" => "premium", "country" => "usa"})
+iex> {:ok, matches} = Expredicate.match(tree_nocase, %{"status" => "premium", "country" => "usa"})
 {:ok, ["premium", "usa_only"]}
 # Note: 'premium' matches 'Premium' and 'usa' matches 'USA' (case-insensitive)
 
 # Combining with other options
-iex> tree = Atree.new(engine: :bytecode, nocase: true)
+iex> tree = Expredicate.new(engine: :bytecode, nocase: true)
 #Reference<0.987654321.0.0>
 ```
 
@@ -144,7 +144,7 @@ iex> tree = Atree.new(engine: :bytecode, nocase: true)
 
 ```bash
 # In iex shell
-iex> Atree.Examples.simple_example()
+iex> Expredicate.Examples.simple_example()
 === Rule-Based Matching Example ===
 
 Created new rule tree
@@ -157,10 +157,10 @@ Values: %{...}
 Matching rules: ...
 
 # More examples
-iex> Atree.Examples.inventory_filtering_example()
-iex> Atree.Examples.user_segmentation_example()
-iex> Atree.Examples.benchmark_example()
-iex> Atree.Examples.operators_example()
+iex> Expredicate.Examples.inventory_filtering_example()
+iex> Expredicate.Examples.user_segmentation_example()
+iex> Expredicate.Examples.benchmark_example()
+iex> Expredicate.Examples.operators_example()
 ```
 
 ## Rule Syntax Examples
@@ -232,12 +232,12 @@ iex> Atree.Examples.operators_example()
 ### User Segmentation
 
 ```elixir
-{:ok, tree} = Atree.new()
+{:ok, tree} = Expredicate.new()
 
 # Define segments
-{:ok, tree} = Atree.insert(tree, "vip", "lifetime_spend > 10000")
-{:ok, tree} = Atree.insert(tree, "engaged", "login_count > 50")
-{:ok, tree} = Atree.insert(tree, "churned", "days_since_login > 90")
+{:ok, tree} = Expredicate.insert(tree, "vip", "lifetime_spend > 10000")
+{:ok, tree} = Expredicate.insert(tree, "engaged", "login_count > 50")
+{:ok, tree} = Expredicate.insert(tree, "churned", "days_since_login > 90")
 
 # Check user
 user = %{
@@ -246,51 +246,51 @@ user = %{
   "days_since_login" => 5
 }
 
-{:ok, segments} = Atree.match(tree, user)
+{:ok, segments} = Expredicate.match(tree, user)
 # => {:ok, ["vip", "engaged"]}
 ```
 
 ### Product Filtering
 
 ```elixir
-{:ok, tree} = Atree.new()
+{:ok, tree} = Expredicate.new()
 
-{:ok, tree} = Atree.insert(tree, "low_stock", "quantity < 10")
-{:ok, tree} = Atree.insert(tree, "on_sale", "discount > 0")
-{:ok, tree} = Atree.insert(tree, "expensive", "price > 500")
+{:ok, tree} = Expredicate.insert(tree, "low_stock", "quantity < 10")
+{:ok, tree} = Expredicate.insert(tree, "on_sale", "discount > 0")
+{:ok, tree} = Expredicate.insert(tree, "expensive", "price > 500")
 
 product = %{"quantity" => 5, "discount" => 25, "price" => 600}
 
-{:ok, tags} = Atree.match(tree, product)
+{:ok, tags} = Expredicate.match(tree, product)
 # => {:ok, ["low_stock", "on_sale", "expensive"]}
 ```
 
 ### Access Control
 
 ```elixir
-{:ok, tree} = Atree.new()
+{:ok, tree} = Expredicate.new()
 
-{:ok, tree} = Atree.insert(tree, "admin", "role == 'admin'")
-{:ok, tree} = Atree.insert(tree, "manager", "role == 'manager'")
-{:ok, tree} = Atree.insert(tree, "premium", "subscription == 'premium'")
-{:ok, tree} = Atree.insert(tree, "free", "subscription == 'free'")
+{:ok, tree} = Expredicate.insert(tree, "admin", "role == 'admin'")
+{:ok, tree} = Expredicate.insert(tree, "manager", "role == 'manager'")
+{:ok, tree} = Expredicate.insert(tree, "premium", "subscription == 'premium'")
+{:ok, tree} = Expredicate.insert(tree, "free", "subscription == 'free'")
 
 user = %{"role" => "manager", "subscription" => "premium"}
 
-{:ok, perms} = Atree.match(tree, user)
+{:ok, perms} = Expredicate.match(tree, user)
 # => {:ok, ["manager", "premium"]}
 ```
 
 ### Tag-Based Rules with List Values
 
 ```elixir
-{:ok, tree} = Atree.new()
+{:ok, tree} = Expredicate.new()
 
 # Rules using list variables (items can have multiple tags)
-{:ok, tree} = Atree.insert(tree, "urgent", "tags any in ['URGENT', 'CRITICAL']")
-{:ok, tree} = Atree.insert(tree, "blocked", "tags any in ['BUG', 'BLOCKER']")
-{:ok, tree} = Atree.insert(tree, "safe", "tags all in ['REVIEWED', 'TESTED']")
-{:ok, tree} = Atree.insert(tree, "standard", "categories not in ['ADULT', '18+']")
+{:ok, tree} = Expredicate.insert(tree, "urgent", "tags any in ['URGENT', 'CRITICAL']")
+{:ok, tree} = Expredicate.insert(tree, "blocked", "tags any in ['BUG', 'BLOCKER']")
+{:ok, tree} = Expredicate.insert(tree, "safe", "tags all in ['REVIEWED', 'TESTED']")
+{:ok, tree} = Expredicate.insert(tree, "standard", "categories not in ['ADULT', '18+']")
 
 # Item with list values
 item = %{
@@ -298,7 +298,7 @@ item = %{
   "categories" => ["TECH", "NEWS"]
 }
 
-{:ok, matching} = Atree.match(tree, item)
+{:ok, matching} = Expredicate.match(tree, item)
 # => {:ok, ["urgent", "standard"]}
 # Explanation:
 #   - urgent: tag "URGENT" is in ['URGENT', 'CRITICAL'] ✓
@@ -313,28 +313,28 @@ Case-insensitive mode is useful when user data comes from different sources with
 
 ```elixir
 # Tree WITH case-insensitive matching
-{:ok, tree_nocase} = Atree.new(nocase: true)
+{:ok, tree_nocase} = Expredicate.new(nocase: true)
 
-{:ok, tree_nocase} = Atree.insert(tree_nocase, "premium_us", "country == 'USA'")
-{:ok, tree_nocase} = Atree.insert(tree_nocase, "premium_ca", "country == 'CANADA'")
-{:ok, tree_nocase} = Atree.insert(tree_nocase, "vip_status", "status in ['Active', 'Premium']")
+{:ok, tree_nocase} = Expredicate.insert(tree_nocase, "premium_us", "country == 'USA'")
+{:ok, tree_nocase} = Expredicate.insert(tree_nocase, "premium_ca", "country == 'CANADA'")
+{:ok, tree_nocase} = Expredicate.insert(tree_nocase, "vip_status", "status in ['Active', 'Premium']")
 
 # Users with various capitalizations all match correctly
 user1 = %{"country" => "usa", "status" => "active"}
 user2 = %{"country" => "Canada", "status" => "PREMIUM"}
 user3 = %{"country" => "USA", "status" => "Active"}
 
-{:ok, m1} = Atree.match(tree_nocase, user1)  # => {:ok, ["premium_us", "vip_status"]}
-{:ok, m2} = Atree.match(tree_nocase, user2)  # => {:ok, ["premium_ca", "vip_status"]}
-{:ok, m3} = Atree.match(tree_nocase, user3)  # => {:ok, ["premium_us", "vip_status"]}
+{:ok, m1} = Expredicate.match(tree_nocase, user1)  # => {:ok, ["premium_us", "vip_status"]}
+{:ok, m2} = Expredicate.match(tree_nocase, user2)  # => {:ok, ["premium_ca", "vip_status"]}
+{:ok, m3} = Expredicate.match(tree_nocase, user3)  # => {:ok, ["premium_us", "vip_status"]}
 
 # Without case-insensitive mode:
-{:ok, tree_case} = Atree.new()  # case-sensitive (default)
-{:ok, tree_case} = Atree.insert(tree_case, "premium_us", "country == 'USA'")
-{:ok, tree_case} = Atree.insert(tree_case, "vip_status", "status in ['Active', 'Premium']")
+{:ok, tree_case} = Expredicate.new()  # case-sensitive (default)
+{:ok, tree_case} = Expredicate.insert(tree_case, "premium_us", "country == 'USA'")
+{:ok, tree_case} = Expredicate.insert(tree_case, "vip_status", "status in ['Active', 'Premium']")
 
-{:ok, m1_case} = Atree.match(tree_case, user1)  # => {:ok, []} - "usa" != "USA"
-{:ok, m2_case} = Atree.match(tree_case, user2)  # => {:ok, []} - "PREMIUM" != "Active"
+{:ok, m1_case} = Expredicate.match(tree_case, user1)  # => {:ok, []} - "usa" != "USA"
+{:ok, m2_case} = Expredicate.match(tree_case, user2)  # => {:ok, []} - "PREMIUM" != "Active"
 ```
 
 ## Troubleshooting
@@ -367,12 +367,12 @@ ls /usr/lib/erlang/usr/include/erl_nif.h
 3. Check for permission issues:
    ```bash
    ls -la priv/
-   # atree_nif.so should exist with execute permissions
+   # expredicate.so should exist with execute permissions
    ```
 
 ### Runtime NIF loading error
 
-If you get `UndefinedFunctionError: function Atree.new/0 is undefined`
+If you get `UndefinedFunctionError: function Expredicate.new/0 is undefined`
 
 1. NIF library didn't load - check compilation
 2. Try clean rebuild:
@@ -413,7 +413,7 @@ rules = %{
 
 tree =
   Enum.reduce(rules, tree, fn {item_id, rule}, acc ->
-    {:ok, updated} = Atree.insert(acc, item_id, rule)
+    {:ok, updated} = Expredicate.insert(acc, item_id, rule)
     updated
   end)
 ```
@@ -428,7 +428,7 @@ values_list = [
 ]
 
 results = Enum.map(values_list, fn values ->
-  {:ok, matches} = Atree.match(tree, values)
+  {:ok, matches} = Expredicate.match(tree, values)
   {values, matches}
 end)
 ```
@@ -437,7 +437,7 @@ end)
 
 ```elixir
 {time, result} = :timer.tc(fn ->
-  Atree.match(tree, %{"age" => 40, "status" => "active"})
+  Expredicate.match(tree, %{"age" => 40, "status" => "active"})
 end)
 
 IO.puts("Query took #{time}μs")
@@ -448,23 +448,23 @@ IO.puts("Found #{length(elem(result, 1))} matches")
 
 1. Check module documentation:
    ```elixir
-   iex> h Atree
+   iex> h Expredicate
    ```
 
 2. Check specific function:
    ```elixir
-   iex> h Atree.match
+   iex> h Expredicate.match
    ```
 
 3. View examples:
    ```elixir
-   iex> Atree.Examples.simple_example()
+   iex> Expredicate.Examples.simple_example()
    ```
 
 4. Review code:
    - Elixir: [src/atree_nif.ex](src/atree_nif.ex)
    - C++: [c_src/atree_nif.cpp](c_src/atree_nif.cpp)
-   - Header: [c_src/atree.h](c_src/atree.h)
+   - Header: [c_src/expredicate.h](c_src/expredicate.h)
 
 ## Commands Reference
 

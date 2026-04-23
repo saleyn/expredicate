@@ -1,6 +1,6 @@
 .PHONY: all clean distclean help run-benchmark benchmark run-benchmark-overhead run-benchmark-statistical benchmark-overhead benchmark-statistical gtl-download xxhash-download
 
-PROJECT   ?= atree
+PROJECT   ?= expredicate
 PROJECT   := $(strip $(PROJECT))
 CURDIR    := $(shell pwd)
 BASEDIR   := $(abspath $(dir $(CURDIR)))
@@ -70,7 +70,7 @@ all: $(SO_OUTPUT)
 $(SO_OUTPUT): $(OBJECTS) $(PRIV_DIR) $(GTL_DEPS) $(XXHASH_HEADER)
 	$(CXX) -shared $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJECTS)
 
-%.o: %.cpp atree.h atree_bytecode.h atree_engine_wrapper.h $(GTL_DEPS) $(XXHASH_HEADER)
+%.o: %.cpp expredicate.h atree_bytecode.h atree_engine_wrapper.h $(GTL_DEPS) $(XXHASH_HEADER)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(PRIV_DIR):
@@ -82,13 +82,13 @@ gtl/include/gtl/phmap.hpp:
 $(XXHASH_HEADER):
 	$(MAKE) xxhash-download
 
-benchmark: benchmark.cpp atree.h atree_bytecode.h
+benchmark: benchmark.cpp expredicate.h atree_bytecode.h
 	$(CXX) $(CXXFLAGS) -o benchmark $< -lstdc++
 
-benchmark-overhead: benchmark_wrapper_overhead.cpp atree.h atree_engine_wrapper.h
+benchmark-overhead: benchmark_wrapper_overhead.cpp expredicate.h atree_engine_wrapper.h
 	$(CXX) $(CXXFLAGS) -o benchmark-overhead $< -lstdc++
 
-benchmark-statistical: benchmark_wrapper_statistical.cpp atree.h atree_engine_wrapper.h
+benchmark-statistical: benchmark_wrapper_statistical.cpp expredicate.h atree_engine_wrapper.h
 	$(CXX) $(CXXFLAGS) -o benchmark-statistical $< -lstdc++
 
 run-benchmark: benchmark

@@ -2,14 +2,14 @@
 
 ## Overview
 
-Atree is a rule-based matching engine that stores opaque items with associated boolean expression rules, then evaluates incoming value maps against those rules to find matches. Built as a hybrid Elixir/C++ project using NIFs for performance.
+Expredicate is a rule-based matching engine that stores opaque items with associated boolean expression rules, then evaluates incoming value maps against those rules to find matches. Built as a hybrid Elixir/C++ project using NIFs for performance.
 
 ## Directory Structure
 
 ```
-atree-nif/
+expredicate/
 ├── c_src/                    # C++ source code
-│   ├── atree.h              # Expression engine and rule tree
+│   ├── expredicate.h              # Expression engine and rule tree
 │   ├── atree_nif.cpp        # NIF wrapper layer
 │   └── Makefile             # Build configuration
 ├── src/                      # Elixir source code
@@ -155,7 +155,7 @@ When initialized with `nocase=true`:
 ```
 ┌─────────────────────────────┐
 │    Elixir Application       │
-│    (Atree module)           │
+│    (Expredicate module)           │
 └──────────────┬──────────────┘
                │ NIF calls
 ┌──────────────▼──────────────┐
@@ -171,7 +171,7 @@ When initialized with `nocase=true`:
 ┌──────────────▼──────────────┐
 │   Expression Engine         │
 │   & Rule Matching           │
-│   (atree.h / C++)           │
+│   (expredicate.h / C++)           │
 ├─────────────────────────────┤
 │  - Tokenizer                │
 │  - Parser                   │
@@ -281,7 +281,7 @@ CPPFLAGS = -I$(ERL_INCLUDE)
 
 ### Elixir API
 
-Functions in `Atree` module wrap corresponding NIFs with documentation and type hints.
+Functions in `Expredicate` module wrap corresponding NIFs with documentation and type hints.
 
 ## Performance Characteristics
 
@@ -339,18 +339,18 @@ During matching:
 ```elixir
 # Safe - different processes, different trees
 Task.start(fn -> 
-  {:ok, tree1} = Atree.new()
+  {:ok, tree1} = Expredicate.new()
   # ... use tree1
 end)
 
 Task.start(fn -> 
-  {:ok, tree2} = Atree.new()
+  {:ok, tree2} = Expredicate.new()
   # ... use tree2
 end)
 
 # Unsafe - same tree, concurrent modifications
-Task.start(fn -> Atree.insert(shared_tree, "a", "rule") end)
-Task.start(fn -> Atree.insert(shared_tree, "b", "rule") end)
+Task.start(fn -> Expredicate.insert(shared_tree, "a", "rule") end)
+Task.start(fn -> Expredicate.insert(shared_tree, "b", "rule") end)
 ```
 
 ## Operator Precedence
@@ -412,11 +412,11 @@ Possible improvements:
 
 ## Example
 
-Here's how Atree lookup works:
+Here's how Expredicate lookup works:
 
 ## The Basic Process
 
-When you call `Atree.match(tree, values)`, it:
+When you call `Expredicate.match(tree, values)`, it:
 
 1. **For each stored rule** in the tree:
    - Evaluates the parsed expression against the provided values
@@ -428,12 +428,12 @@ When you call `Atree.match(tree, values)`, it:
 Let's say you have this setup:
 
 ```elixir
-{:ok, tree} = Atree.new()
+{:ok, tree} = Expredicate.new()
 
 # Insert rules
-{:ok, tree} = Atree.insert(tree, "deal_A", "age > 30 and balance > 1000")
-{:ok, tree} = Atree.insert(tree, "deal_B", "status == 'premium'")
-{:ok, tree} = Atree.insert(tree, "deal_C", "age < 25 or score >= 90")
+{:ok, tree} = Expredicate.insert(tree, "deal_A", "age > 30 and balance > 1000")
+{:ok, tree} = Expredicate.insert(tree, "deal_B", "status == 'premium'")
+{:ok, tree} = Expredicate.insert(tree, "deal_C", "age < 25 or score >= 90")
 ```
 
 Then you match:
@@ -446,7 +446,7 @@ values = %{
   "score" => 88
 }
 
-{:ok, matches} = Atree.match(tree, values)
+{:ok, matches} = Expredicate.match(tree, values)
 ```
 
 ### Evaluation Process
@@ -534,19 +534,19 @@ ATree now supports runtime selection between two expression evaluation engines:
 
 ```elixir
 # Default: parser engine (recommended for most applications)
-tree = Atree.new()
+tree = Expredicate.new()
 
 # Explicitly select parser
-tree = Atree.new(engine: :parser)
+tree = Expredicate.new(engine: :parser)
 
 # Select bytecode for high-volume streaming
-tree = Atree.new(engine: :bytecode)
+tree = Expredicate.new(engine: :bytecode)
 
 # Using keyword list syntax
-tree = Atree.new([engine: :bytecode])
+tree = Expredicate.new([engine: :bytecode])
 
 # Using map syntax
-tree = Atree.new(%{engine: :bytecode})
+tree = Expredicate.new(%{engine: :bytecode})
 ```
 
 All subsequent operations (insert, remove, match, etc.) use the selected engine.
@@ -654,8 +654,8 @@ All tests verify that both engines produce identical results:
 
 ```elixir
 test "both engines produce identical results" do
-  parser_tree   = Atree.new(engine: :parser)
-  bytecode_tree = Atree.new(engine: :bytecode)
+  parser_tree   = Expredicate.new(engine: :parser)
+  bytecode_tree = Expredicate.new(engine: :bytecode)
   
   # Insert same rules into both
   # Verify identical matches for various value maps

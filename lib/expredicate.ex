@@ -1,6 +1,6 @@
-defmodule Atree do
+defmodule Expredicate do
   @moduledoc """
-  Rule-based matching engine via NIF.
+  Rule-based matcher of items in a collection.
 
   Store opaque items with associated boolean expression rules. Match incoming
   value maps against all rules to find matching items.
@@ -14,11 +14,11 @@ defmodule Atree do
 
   ## Examples
 
-      iex> tree = Atree.new()
-      iex> tree = Atree.insert!(tree, "rule1", "age > 30 and status == 'active'")
-      iex> tree = Atree.insert!(tree, "rule2", "tv_brand in ['Samsung', 'LG']")
-      iex> tree = Atree.insert!(tree, "rule3", "tv_brand not in ['Samsung', 'LG']")
-      iex> items = Atree.all_items(tree)
+      iex> tree = Expredicate.new()
+      iex> tree = Expredicate.insert!(tree, "rule1", "age > 30 and status == 'active'")
+      iex> tree = Expredicate.insert!(tree, "rule2", "tv_brand in ['Samsung', 'LG']")
+      iex> tree = Expredicate.insert!(tree, "rule3", "tv_brand not in ['Samsung', 'LG']")
+      iex> items = Expredicate.all_items(tree)
       iex> Enum.sort(items)
       ["rule1", "rule2", "rule3"]
 
@@ -44,7 +44,7 @@ defmodule Atree do
              ]}
 
   def load_nifs do
-    nif_path = :filename.join(:code.priv_dir(:exatree), ~c"atree")
+    nif_path = :filename.join(:code.priv_dir(:expredicate), ~c"expredicate")
     :erlang.load_nif(nif_path, 0)
   end
 
@@ -87,31 +87,31 @@ defmodule Atree do
 
   ## Examples
 
-      iex> tree = Atree.new()
+      iex> tree = Expredicate.new()
       iex> is_reference(tree)
       true
 
   With engine selection:
 
-      iex> tree = Atree.new(engine: :bytecode)
+      iex> tree = Expredicate.new(engine: :bytecode)
       iex> is_reference(tree)
       true
 
   With case-insensitive matching:
 
-      iex> tree = Atree.new(nocase: true)
+      iex> tree = Expredicate.new(nocase: true)
       iex> is_reference(tree)
       true
 
   With multiple options:
 
-      iex> tree = Atree.new(engine: :bytecode, nocase: true)
+      iex> tree = Expredicate.new(engine: :bytecode, nocase: true)
       iex> is_reference(tree)
       true
 
   With map options:
 
-      iex> tree = Atree.new(%{engine: :bytecode, nocase: true})
+      iex> tree = Expredicate.new(%{engine: :bytecode, nocase: true})
       iex> is_reference(tree)
       true
 
@@ -159,15 +159,15 @@ defmodule Atree do
 
   ## Examples
 
-      iex> tree = Atree.new()
-      iex> {:ok, tree} = Atree.insert(tree, "item1", "age > 30")
-      iex> {:error, :item_exists} = Atree.insert(tree, "item1", "age < 50")
+      iex> tree = Expredicate.new()
+      iex> {:ok, tree} = Expredicate.insert(tree, "item1", "age > 30")
+      iex> {:error, :item_exists} = Expredicate.insert(tree, "item1", "age < 50")
       {:error, :item_exists}
 
   With metadata:
 
   ```
-  Atree.insert(tree, {"user_rule", %{"category" => "adult"}}, "age > 30")
+  Expredicate.insert(tree, {"user_rule", %{"category" => "adult"}}, "age > 30")
   ```
 
   """
@@ -185,8 +185,8 @@ defmodule Atree do
 
   ## Examples
 
-      iex> tree = Atree.new()
-      iex> tree = Atree.insert!(tree, "item1", "age > 30")
+      iex> tree = Expredicate.new()
+      iex> tree = Expredicate.insert!(tree, "item1", "age > 30")
       iex> is_reference(tree)
       true
 
@@ -207,12 +207,12 @@ defmodule Atree do
 
   ## Examples
 
-      iex> tree = Atree.new()
-      iex> Atree.insert!(tree, "item1", "age > 30") |> Atree.exists("item1")
+      iex> tree = Expredicate.new()
+      iex> Expredicate.insert!(tree, "item1", "age > 30") |> Expredicate.exists("item1")
       true
-      iex> Atree.remove!(tree, "item1") |> Atree.exists("item1")
+      iex> Expredicate.remove!(tree, "item1") |> Expredicate.exists("item1")
       false
-      iex> {:error, :not_found} = Atree.remove(tree, "nonexistent")
+      iex> {:error, :not_found} = Expredicate.remove(tree, "nonexistent")
       {:error, :not_found}
 
   """
@@ -229,10 +229,10 @@ defmodule Atree do
 
   ## Examples
 
-      iex> tree = Atree.new()
-      iex> Atree.insert!(tree, "item1", "age > 30") |> Atree.exists("item1")
+      iex> tree = Expredicate.new()
+      iex> Expredicate.insert!(tree, "item1", "age > 30") |> Expredicate.exists("item1")
       true
-      iex> Atree.remove!(tree, "item1") |> Atree.exists("item1")
+      iex> Expredicate.remove!(tree, "item1") |> Expredicate.exists("item1")
       false
 
   """
@@ -265,10 +265,10 @@ defmodule Atree do
 
   ## Examples
 
-      iex> tree = Atree.new()
-      iex> {:ok, tree} = Atree.insert(tree, "rule1", "age > 30")
-      iex> {:ok, tree} = Atree.insert(tree, "rule2", "age < 25")
-      iex> Atree.match(tree, %{"age" => 35})
+      iex> tree = Expredicate.new()
+      iex> {:ok, tree} = Expredicate.insert(tree, "rule1", "age > 30")
+      iex> {:ok, tree} = Expredicate.insert(tree, "rule2", "age < 25")
+      iex> Expredicate.match(tree, %{"age" => 35})
       ["rule1"]
 
   """
@@ -285,10 +285,10 @@ defmodule Atree do
 
   ## Examples
 
-      iex> tree = Atree.new()
-      iex> {:ok, tree} = Atree.insert(tree, "a", "age > 30")
-      iex> {:ok, tree} = Atree.insert(tree, "b", "age < 25")
-      iex> items = Atree.all_items(tree)
+      iex> tree = Expredicate.new()
+      iex> {:ok, tree} = Expredicate.insert(tree, "a", "age > 30")
+      iex> {:ok, tree} = Expredicate.insert(tree, "b", "age < 25")
+      iex> items = Expredicate.all_items(tree)
       iex> Enum.sort(items)
       ["a", "b"]
 
@@ -305,11 +305,11 @@ defmodule Atree do
 
   ## Examples
 
-      iex> tree = Atree.new()
-      iex> Atree.count(tree)
+      iex> tree = Expredicate.new()
+      iex> Expredicate.count(tree)
       0
-      iex> {:ok, tree} = Atree.insert(tree, "a", "true")
-      iex> Atree.count(tree)
+      iex> {:ok, tree} = Expredicate.insert(tree, "a", "true")
+      iex> Expredicate.count(tree)
       1
 
   """
@@ -325,10 +325,10 @@ defmodule Atree do
 
   ## Examples
 
-      iex> tree = Atree.new()
-      iex> {:ok, tree} = Atree.insert(tree, "item", "age > 30")
-      iex> :ok = Atree.clear(tree)
-      iex> Atree.count(tree)
+      iex> tree = Expredicate.new()
+      iex> {:ok, tree} = Expredicate.insert(tree, "item", "age > 30")
+      iex> :ok = Expredicate.clear(tree)
+      iex> Expredicate.count(tree)
       0
 
   """
@@ -344,11 +344,11 @@ defmodule Atree do
 
   ## Examples
 
-      iex> tree = Atree.new()
-      iex> Atree.empty(tree)
+      iex> tree = Expredicate.new()
+      iex> Expredicate.empty(tree)
       true
-      iex> {:ok, tree} = Atree.insert(tree, "item", "age > 30")
-      iex> Atree.empty(tree)
+      iex> {:ok, tree} = Expredicate.insert(tree, "item", "age > 30")
+      iex> Expredicate.empty(tree)
       false
 
   """
@@ -364,11 +364,11 @@ defmodule Atree do
 
   ## Examples
 
-      iex> tree = Atree.new()
-      iex> {:ok, tree} = Atree.insert(tree, "a", "age > 30")
-      iex> Atree.exists(tree, "a")
+      iex> tree = Expredicate.new()
+      iex> {:ok, tree} = Expredicate.insert(tree, "a", "age > 30")
+      iex> Expredicate.exists(tree, "a")
       true
-      iex> Atree.exists(tree, "b")
+      iex> Expredicate.exists(tree, "b")
       false
 
   """
@@ -378,7 +378,7 @@ defmodule Atree do
   end
 end
 
-defmodule Atree.App do
+defmodule Expredicate.App do
   use Application
 
   @impl true

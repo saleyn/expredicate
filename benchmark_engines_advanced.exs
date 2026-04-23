@@ -86,7 +86,7 @@ defmodule AtreeBenchmarkAdvanced do
     {elapsed_us, _result} =
       :timer.tc(fn ->
         Enum.all?(1..iterations, fn _ ->
-          Atree.match(tree, test_values)
+          Expredicate.match(tree, test_values)
           true
         end)
       end)
@@ -103,10 +103,10 @@ defmodule AtreeBenchmarkAdvanced do
   end
 
   defp setup_tree(engine, rules) do
-    tree = Atree.new(engine: engine)
+    tree = Expredicate.new(engine: engine)
 
     Enum.reduce(rules, tree, fn {rule_id, rule_text}, acc ->
-      {:ok, new_tree} = Atree.insert(acc, rule_id, rule_text)
+      {:ok, new_tree} = Expredicate.insert(acc, rule_id, rule_text)
       new_tree
     end)
   end
@@ -142,4 +142,4 @@ defmodule AtreeBenchmarkAdvanced do
 end
 
 # Run the advanced benchmark
-AtreeBenchmarkAdvanced.run()
+ExpredicateBenchmarkAdvanced.run()

@@ -1,16 +1,16 @@
-# Atree
+# Expredicate
 
-[![build](https://github.com/saleyn/exatree-rules/actions/workflows/build.yml/badge.svg)](https://github.com/saleyn/exatree-rules/actions/workflows/build.yml)
-[![Hex.pm](https://img.shields.io/hexpm/v/exatree-rules.svg)](https://hex.pm/packages/exatree-rules)
-[![Hex.pm](https://img.shields.io/hexpm/dt/exatree-rules.svg)](https://hex.pm/packages/exatree-rules)
+[![build](https://github.com/saleyn/expredicate/actions/workflows/build.yml/badge.svg)](https://github.com/saleyn/expredicate/actions/workflows/build.yml)
+[![Hex.pm](https://img.shields.io/hexpm/v/expredicate.svg)](https://hex.pm/packages/expredicate)
+[![Hex.pm](https://img.shields.io/hexpm/dt/expredicate.svg)](https://hex.pm/packages/expredicate)
 
-Rule-based matching engine for Elixir using C++ NIFs. Store opaque items with 
+High-performance predicate matching engine for Elixir using C++ NIFs. Store opaque items with 
 associated boolean expression rules, then match incoming value maps against all 
 rules to find matching items.
 
 ## Features
 
-- **Rule-Based Matching**: Associate opaque items with compiled boolean expression rules
+- **Predicate-Based Matching**: Associate opaque items with compiled boolean expression predicates
 - **Rich Expression Language**: Support for arithmetic, logical, and list operations
 - **High Performance**: Built in C++ for performance-critical matching operations
 - **Flexible Value Matching**: Match against maps with numbers, strings, and booleans
@@ -23,7 +23,7 @@ Add to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:atree_nif, path: "path/to/atree-nif"}
+    {:expredicate, path: "path/to/expredicate"}
   ]
 end
 ```
@@ -32,12 +32,12 @@ end
 
 ```elixir
 # Create a new rule tree
-tree = Atree.new()
+tree = Expredicate.new()
 
 # Insert items with rules
-{:ok, tree} = Atree.insert(tree, "rule1", "age > 30 and status == 'active'")
-{:ok, tree} = Atree.insert(tree, "rule2", "tv_brand any in ['Samsung', 'LG']")
-{:ok, tree} = Atree.insert(tree, "rule3", "not premium or age < 18")
+{:ok, tree} = Expredicate.insert(tree, "rule1", "age > 30 and status == 'active'")
+{:ok, tree} = Expredicate.insert(tree, "rule2", "tv_brand any in ['Samsung', 'LG']")
+{:ok, tree} = Expredicate.insert(tree, "rule3", "not premium or age < 18")
 
 # Match a value map against all rules
 # Variables can be scalars or lists
@@ -48,7 +48,7 @@ values = %{
   "premium" => false
 }
 
-matched = Atree.match(tree, values)
+matched = Expredicate.match(tree, values)
 # => ["rule1", "rule2"] (rule2 matches: "Samsung" is in ['Samsung', 'LG'])
 ```
 
@@ -138,13 +138,13 @@ Rules are boolean expressions with the following operators:
 ### User Segmentation
 
 ```elixir
-tree = Atree.new()
+tree = Expredicate.new()
 
 # Define user segments
-Atree.insert!(tree, "vip", "lifetime_spend > 10000 and account_age > 365")
-Atree.insert!(tree, "engaged", "login_count > 50 and days_since_login < 7")
-Atree.insert!(tree, "churned", "days_since_login > 90")
-Atree.insert!(tree, "trial", "account_age <= 30 and status == 'trial'")
+Expredicate.insert!(tree, "vip", "lifetime_spend > 10000 and account_age > 365")
+Expredicate.insert!(tree, "engaged", "login_count > 50 and days_since_login < 7")
+Expredicate.insert!(tree, "churned", "days_since_login > 90")
+Expredicate.insert!(tree, "trial", "account_age <= 30 and status == 'trial'")
 
 # Check which segments a user belongs to
 user = %{
@@ -155,40 +155,40 @@ user = %{
   "status" => "active"
 }
 
-segments = Atree.match(tree, user)
+segments = Expredicate.match(tree, user)
 # => ["vip", "engaged"]
 ```
 
 ### Product Filtering
 
 ```elixir
-tree = Atree.new()
+tree = Expredicate.new()
 
-{:ok, tree} = Atree.insert(tree, "must_reorder", "stock < 10")
-{:ok, tree} = Atree.insert(tree, "on_sale", "discount > 0")
-{:ok, tree} = Atree.insert(tree, "low_margin", "margin < 10")
-{:ok, tree} = Atree.insert(tree, "restricted", "certifications not in ['FDA', 'CE']")
+{:ok, tree} = Expredicate.insert(tree, "must_reorder", "stock < 10")
+{:ok, tree} = Expredicate.insert(tree, "on_sale",      "discount > 0")
+{:ok, tree} = Expredicate.insert(tree, "low_margin",   "margin < 10")
+{:ok, tree} = Expredicate.insert(tree, "restricted",   "certifications not in ['FDA', 'CE']")
 
 product = %{"stock" => 5, "discount" => 25, "margin" => 8, "certifications" => ["UL"]}
 
-actions = Atree.match(tree, product)
+actions = Expredicate.match(tree, product)
 # => ["must_reorder", "on_sale", "low_margin", "restricted"]
 ```
 
 ### Tag-Based Rules with List Values
 
 ```elixir
-tree = Atree.new()
+tree = Expredicate.new()
 
 # Rules for items with multiple tags
-{:ok, tree} = Atree.insert(tree, "urgent", "tags any in ['URGENT', 'CRITICAL']")
-{:ok, tree} = Atree.insert(tree, "safe", "tags all in ['APPROVED', 'TESTED']")
-{:ok, tree} = Atree.insert(tree, "blocked", "tags any in ['BLOCKED', 'HOLD']")
+{:ok, tree} = Expredicate.insert(tree, "urgent", "tags any in ['URGENT', 'CRITICAL']")
+{:ok, tree} = Expredicate.insert(tree, "safe", "tags all in ['APPROVED', 'TESTED']")
+{:ok, tree} = Expredicate.insert(tree, "blocked", "tags any in ['BLOCKED', 'HOLD']")
 
 # Match items - variables can contain lists
 item = %{"tags" => ["REVIEWED", "URGENT", "DRAFT"]}
 
-actions = Atree.match(tree, item)
+actions = Expredicate.match(tree, item)
 # => ["urgent"] (has URGENT, but not all tags in ['APPROVED', 'TESTED'])
 ```
 
@@ -196,10 +196,10 @@ actions = Atree.match(tree, item)
 
 ```elixir
 # With nocase: true, all string comparisons are case-insensitive
-tree = Atree.new(nocase: true)
+tree = Expredicate.new(nocase: true)
 
-{:ok, tree} = Atree.insert(tree, "premium", "status == 'Premium'")
-{:ok, tree} = Atree.insert(tree, "restricted", "country not in ['USA', 'Canada']")
+{:ok, tree} = Expredicate.insert(tree, "premium", "status == 'Premium'")
+{:ok, tree} = Expredicate.insert(tree, "restricted", "country not in ['USA', 'Canada']")
 
 # Rules match regardless of case
 values = %{
@@ -207,7 +207,7 @@ values = %{
   "country" => "uk"
 }
 
-matched = Atree.match(tree, values)
+matched = Expredicate.match(tree, values)
 # => ["premium", "restricted"]
 # - "premium" matches because 'premium' == 'Premium' (case-insensitive)
 # - "restricted" matches because "uk" not in ['USA', 'Canada'] (case-insensitive)
@@ -291,19 +291,19 @@ Then:
 
 ```elixir
 # Simple example
-Atree.Examples.simple_example()
+Expredicate.Examples.simple_example()
 
 # Inventory filtering
-Atree.Examples.inventory_filtering_example()
+Expredicate.Examples.inventory_filtering_example()
 
 # User segmentation
-Atree.Examples.user_segmentation_example()
+Expredicate.Examples.user_segmentation_example()
 
 # Benchmark
-Atree.Examples.benchmark_example()
+Expredicate.Examples.benchmark_example()
 
 # Operator reference
-Atree.Examples.operators_example()
+Expredicate.Examples.operators_example()
 ```
 
 ## License

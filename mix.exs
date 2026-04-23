@@ -1,9 +1,9 @@
-defmodule Atree.MixProject do
+defmodule Expredicate.MixProject do
   use Mix.Project
 
   def project do
     [
-      app:             :exatree,
+      app:             :expredicate,
       version:         "0.1.1",
       elixir:          "~> 1.14",
       start_permanent: Mix.env() == :prod,
@@ -13,7 +13,7 @@ defmodule Atree.MixProject do
       package:         package(),
       test_coverage:   [
         output:         ".cover",
-        ignore_modules: [Atree],
+        ignore_modules: [Expredicate],
         # allow_failure: true,
         summary:        [threshold: 90]
       ]
@@ -25,7 +25,7 @@ defmodule Atree.MixProject do
 
   def application do
     [
-      mod:                {Atree.App, []},
+      mod:                {Expredicate.App, []},
       extra_applications: [:logger]
     ]
   end
@@ -41,15 +41,15 @@ defmodule Atree.MixProject do
     [
       main:       "readme",
       extras:     ["README.md", "LICENSE"],
-      source_url: "https://github.com/user/atree-nif"
+      source_url: "https://github.com/user/expredicate"
     ]
   end
 
   defp package do
     [
-      description: "Efficient A-Tree pattern matching via NIF",
+      description: "High-performance predicate matching engine via NIF",
       licenses:    ["MIT"],
-      links:       %{"GitHub" => "https://github.com/user/atree-nif"}
+      links:       %{"GitHub" => "https://github.com/user/expredicate"}
     ]
   end
 end

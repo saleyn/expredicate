@@ -3,9 +3,9 @@
 #include <memory>
 #include <vector>
 #include <map>
-#include "atree.h"
+#include "expredicate.h"
 
-using namespace atree;
+using namespace expredicate;
 
 // Resource type for RuleTree
 static ErlNifResourceType* rule_tree_resource_type = nullptr;

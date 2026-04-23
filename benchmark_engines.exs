@@ -1,11 +1,11 @@
-defmodule AtreeBenchmark do
+defmodule ExpredicateBenchmark do
   @moduledoc """
   Benchmark script comparing default (parser) and bytecode engines
   """
 
   def run do
     IO.puts("=" <> String.duplicate("=", 78))
-    IO.puts("ATREE ENGINE BENCHMARK - 50,000 Operations per Engine")
+    IO.puts("EXPREDICATE ENGINE BENCHMARK - 50,000 Operations per Engine")
     IO.puts("=" <> String.duplicate("=", 78))
     IO.puts("")
 
@@ -55,10 +55,10 @@ defmodule AtreeBenchmark do
   end
 
   defp setup_tree(engine, rules) do
-    tree = Atree.new(engine: engine)
+    tree = Expredicate.new(engine: engine)
 
     Enum.reduce(rules, tree, fn {rule_id, rule_text}, acc ->
-      {:ok, new_tree} = Atree.insert(acc, rule_id, rule_text)
+      {:ok, new_tree} = Expredicate.insert(acc, rule_id, rule_text)
       new_tree
     end)
   end
@@ -69,7 +69,7 @@ defmodule AtreeBenchmark do
     {elapsed_us, _result} =
       :timer.tc(fn ->
         Enum.all?(1..iterations, fn _ ->
-          Atree.match(tree, test_values)
+          Expredicate.match(tree, test_values)
           true
         end)
       end)
@@ -119,4 +119,4 @@ defmodule AtreeBenchmark do
 end
 
 # Run the benchmark
-AtreeBenchmark.run()
+ExpredicateBenchmark.run()

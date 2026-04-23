@@ -16,7 +16,7 @@ clean distclean:
 	@rm -fr _build .cover erl_crash.dump
 	@mix clean
 
-test: priv/atree.so
+test: priv/expredicate.so
 	mix $@
 
 fmt:
@@ -28,7 +28,7 @@ cover:
 benchmark:
 	mix test test/benchmarks_test.exs
 
-priv/atree.so:
+priv/expredicate.so:
 	$(MAKE) compile
 
 .PHONY: test deps compile benchmark cover
