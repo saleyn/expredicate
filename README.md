@@ -23,7 +23,7 @@ Add to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:expredicate, path: "path/to/expredicate"}
+    {:expredicate, github: "saleyn/expredicate"}
   ]
 end
 ```
