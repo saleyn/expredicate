@@ -25,11 +25,9 @@ defmodule BenchmarkFormatter do
     # Format all values: convert to "time (ratio)" format
     formatted_results = Enum.map(results, &format_benchmark/1)
 
-    # Find column widths
-    col_widths        = calculate_widths(formatted_results)
+    col_widths        = calculate_widths(formatted_results)    # Find column widths
 
-    # Build output
-    lines             = [
+    lines             = [                                      # Build output
       horizontal_line(col_widths),
       header_row(col_widths),
       horizontal_line(col_widths)
@@ -58,12 +56,10 @@ defmodule BenchmarkFormatter do
     BenchmarkFormatter.simple_table(results)
   """
   def simple_table(results, _title \\ "BENCHMARKS") when is_list(results) do
-    # Format time values
-    formatted_results =
+    formatted_results =  # Format time values
       Enum.map(results, fn {name, time_us} -> {name, format_us(time_us)} end)
 
-    # Calculate column widths
-    headers = ["Benchmark", "Time"]
+    headers = ["Benchmark", "Time"] # Calculate column widths
 
     col_widths =
       Enum.reduce(formatted_results, [0, 0], fn {name, time_str}, [w1, w2] ->
@@ -74,8 +70,7 @@ defmodule BenchmarkFormatter do
       Enum.zip(headers, col_widths)
       |> Enum.map(fn {h, w} -> max(String.length(h), w) end)
 
-    # Build output
-    lines = [
+    lines = [  # Build output
       horizontal_line(col_widths),
       simple_header_row(col_widths),
       horizontal_line(col_widths)
@@ -140,8 +135,7 @@ defmodule BenchmarkFormatter do
 
   # Format microseconds with appropriate precision and unit
   defp format_us(us) when is_number(us) do
-    # Convert to float to handle both integer and float inputs
-    us_float = us / 1.0
+    us_float = us / 1.0 # Convert to float to handle both integer and float inputs
 
     cond do
       us_float >= 1_000_000 -> "#{Float.round(us_float / 1_000_000, 3)}ms"
@@ -169,8 +163,7 @@ defmodule BenchmarkFormatter do
 
   defp horizontal_line(col_widths) do
     # The row format is: "| " + cells separated by "|" + " |"
-    # So we need dashes that account for these spaces
-    last_col_idx = Enum.count(col_widths) - 1
+    last_col_idx = Enum.count(col_widths) - 1 # So we need dashes that account for these spaces
 
     dashes =
       col_widths

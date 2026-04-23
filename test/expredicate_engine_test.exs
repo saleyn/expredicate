@@ -101,8 +101,7 @@ defmodule ExpredicateEngineTest do
       end)
       |> case do
         {p_tree, b_tree} ->
-          # Test various value maps
-          test_cases = [
+          test_cases = [  # Test various value maps
             %{"age" => 35, "status" => "active", "score" => "A", "premium" => false},
             %{"age" => 25, "status" => "inactive", "score" => "C", "premium" => true},
             %{"age" => 40, "status" => "active", "score" => "B", "premium" => false}

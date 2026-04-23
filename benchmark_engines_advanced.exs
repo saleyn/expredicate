@@ -1,4 +1,4 @@
-defmodule AtreeBenchmarkAdvanced do
+defmodule ExpredicateBenchmarkAdvanced do
   @moduledoc """
   Advanced benchmark script comparing engines across different scenarios
   """

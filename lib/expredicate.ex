@@ -26,8 +26,7 @@ defmodule Expredicate do
 
   @on_load  :load_nifs
   # Suppress type checking warnings for NIF stub functions
-  # These implementations are replaced by the NIF at runtime
-  @dialyzer {:nowarn_function,
+  @dialyzer {:nowarn_function,  # These implementations are replaced by the NIF at runtime
              [
                {:new,       0},
                {:new,       1},

@@ -61,7 +61,7 @@ PRIV_DIR   ?= $(if $(REBAR_BARE_COMPILER_OUTPUT_DIR),$(REBAR_BARE_COMPILER_OUTPU
 SO_OUTPUT  ?= $(PRIV_DIR)/$(PROJECT).so
 
 # Source files
-SOURCES = atree_nif.cpp
+SOURCES = expredicate_nif.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 
 # Targets
@@ -70,7 +70,7 @@ all: $(SO_OUTPUT)
 $(SO_OUTPUT): $(OBJECTS) $(PRIV_DIR) $(GTL_DEPS) $(XXHASH_HEADER)
 	$(CXX) -shared $(CXXFLAGS) $(LDFLAGS) -o $@ $(OBJECTS)
 
-%.o: %.cpp expredicate.h atree_bytecode.h atree_engine_wrapper.h $(GTL_DEPS) $(XXHASH_HEADER)
+%.o: %.cpp expredicate.h expredicate_bytecode.h expredicate_engine_wrapper.h $(GTL_DEPS) $(XXHASH_HEADER)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(PRIV_DIR):
@@ -82,13 +82,13 @@ gtl/include/gtl/phmap.hpp:
 $(XXHASH_HEADER):
 	$(MAKE) xxhash-download
 
-benchmark: benchmark.cpp expredicate.h atree_bytecode.h
+benchmark: benchmark.cpp expredicate.h expredicate_bytecode.h
 	$(CXX) $(CXXFLAGS) -o benchmark $< -lstdc++
 
-benchmark-overhead: benchmark_wrapper_overhead.cpp expredicate.h atree_engine_wrapper.h
+benchmark-overhead: benchmark_wrapper_overhead.cpp expredicate.h expredicate_engine_wrapper.h
 	$(CXX) $(CXXFLAGS) -o benchmark-overhead $< -lstdc++
 
-benchmark-statistical: benchmark_wrapper_statistical.cpp expredicate.h atree_engine_wrapper.h
+benchmark-statistical: benchmark_wrapper_statistical.cpp expredicate.h expredicate_engine_wrapper.h
 	$(CXX) $(CXXFLAGS) -o benchmark-statistical $< -lstdc++
 
 run-benchmark: benchmark
@@ -117,7 +117,7 @@ xxhash-download:
 	@echo "✓ xxHash C++ wrapper header downloaded successfully"
 
 help:
-	@echo "AtreeNIF C++ Makefile targets:"
+	@echo "expredicateNIF C++ Makefile targets:"
 	@echo ""
 	@echo "  make all                      - Build the shared library (default)"
 	@echo "  make clean                    - Remove compiled objects and binaries"

@@ -384,8 +384,7 @@ defmodule ExpredicateTest do
 
     test "handles large int64_t values" do
       tree      = Expredicate.new()
-      # max int64
-      large_num = 9_223_372_036_854_775_807
+      large_num = 9_223_372_036_854_775_807 # max int64
       {:ok, tree} = Expredicate.insert(tree, "r1", "value == 9223372036854775807")
       {:ok, tree} = Expredicate.insert(tree, "r2", "value > 9000000000000000000")
 
@@ -412,12 +411,9 @@ defmodule ExpredicateTest do
       tree = Expredicate.new()
       {:ok, tree} = Expredicate.insert(tree, "higher", "value > 50")
 
-      # int64
-      matches1 = Expredicate.match(tree, %{"value" => 100})
-      # double
-      matches2 = Expredicate.match(tree, %{"value" => 100.5})
-      # int64
-      matches3 = Expredicate.match(tree, %{"value" => 25})
+      matches1 = Expredicate.match(tree, %{"value" => 100})   # int64
+      matches2 = Expredicate.match(tree, %{"value" => 100.5}) # double
+      matches3 = Expredicate.match(tree, %{"value" => 25})    # int64
 
       assert matches1 == ["higher"]
       assert matches2 == ["higher"]
@@ -428,16 +424,13 @@ defmodule ExpredicateTest do
       tree = Expredicate.new()
       {:ok, tree} = Expredicate.insert(tree, "exact", "level == 10")
 
-      # Test int64_t matching
-      matches1 = Expredicate.match(tree, %{"level" => 10})
+      matches1 = Expredicate.match(tree, %{"level" => 10})  # Test int64_t matching
       assert matches1 == ["exact"]
 
-      # Test with double that's equivalent
-      matches2 = Expredicate.match(tree, %{"level" => 10.0})
+      matches2 = Expredicate.match(tree, %{"level" => 10.0})  # Test with double that's equivalent
       assert matches2 == ["exact"]
 
-      # Test non-matching
-      matches3 = Expredicate.match(tree, %{"level" => 11})
+      matches3 = Expredicate.match(tree, %{"level" => 11})  # Test non-matching
       assert matches3 == []
     end
 

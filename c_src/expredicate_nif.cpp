@@ -396,4 +396,4 @@ static int load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info) {
 /**
  * Module initialization
  */
-ERL_NIF_INIT(Elixir.Atree, nif_funcs, load, NULL, NULL, NULL)
+ERL_NIF_INIT(Elixir.Expredicate, nif_funcs, load, NULL, NULL, NULL)

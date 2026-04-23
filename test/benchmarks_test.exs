@@ -15,8 +15,7 @@ defmodule BenchmarksTest do
       IO.puts("        Comparing: Non-Indexed vs Indexed vs Adaptive Configurations")
       IO.puts(String.duplicate("=", 80))
 
-      # Collect all benchmark results
-      results = []
+      results = []                                   # Collect all benchmark results
 
       # === BASIC OPERATIONS ===
       IO.puts("\n--- Running Basic Operations Benchmarks ---")
@@ -64,8 +63,7 @@ defmodule BenchmarksTest do
   # ===== BENCHMARK IMPLEMENTATIONS =====
 
   defp benchmark_insert_100(results) do
-    # Non-indexed configuration
-    tree_ni = Expredicate.new(index_vars: false)
+    tree_ni = Expredicate.new(index_vars: false) # Non-indexed configuration
 
     {insert_ni, _} =
       :timer.tc(fn ->
@@ -76,8 +74,7 @@ defmodule BenchmarksTest do
         end)
       end)
 
-    # Indexed configuration
-    tree_idx = Expredicate.new(index_vars: true)
+    tree_idx = Expredicate.new(index_vars: true) # Indexed configuration
 
     {insert_idx, _} =
       :timer.tc(fn ->
@@ -88,8 +85,7 @@ defmodule BenchmarksTest do
         end)
       end)
 
-    # Adaptive configuration
-    tree_ada = Expredicate.new(adaptive: true)
+    tree_ada = Expredicate.new(adaptive: true) # Adaptive configuration
 
     {insert_ada, _} =
       :timer.tc(fn ->
@@ -104,8 +100,7 @@ defmodule BenchmarksTest do
   end
 
   defp benchmark_insert_1000(results) do
-    # Non-indexed configuration
-    tree_ni = Expredicate.new(index_vars: false)
+    tree_ni = Expredicate.new(index_vars: false) # Non-indexed configuration
 
     {insert_ni, _} =
       :timer.tc(fn ->
@@ -118,8 +113,7 @@ defmodule BenchmarksTest do
         end)
       end)
 
-    # Indexed configuration
-    tree_idx = Expredicate.new(index_vars: true)
+    tree_idx = Expredicate.new(index_vars: true) # Indexed configuration
 
     {insert_idx, _} =
       :timer.tc(fn ->
@@ -132,8 +126,7 @@ defmodule BenchmarksTest do
         end)
       end)
 
-    # Adaptive configuration
-    tree_ada = Expredicate.new(adaptive: true)
+    tree_ada = Expredicate.new(adaptive: true) # Adaptive configuration
 
     {insert_ada, _} =
       :timer.tc(fn ->
@@ -150,8 +143,7 @@ defmodule BenchmarksTest do
   end
 
   defp benchmark_match_100(results) do
-    # Non-indexed configuration
-    tree_ni = Expredicate.new(index_vars: false)
+    tree_ni = Expredicate.new(index_vars: false) # Non-indexed configuration
 
     Enum.each(1..100, fn i ->
       rule = "field#{rem(i, 5)} > #{i}"
@@ -168,8 +160,7 @@ defmodule BenchmarksTest do
 
     {match_ni, _} = :timer.tc(fn -> Expredicate.match(tree_ni, values) end)
 
-    # Indexed configuration
-    tree_idx = Expredicate.new(index_vars: true)
+    tree_idx = Expredicate.new(index_vars: true) # Indexed configuration
 
     Enum.each(1..100, fn i ->
       rule = "field#{rem(i, 5)} > #{i}"
@@ -178,8 +169,7 @@ defmodule BenchmarksTest do
 
     {match_idx, _} = :timer.tc(fn -> Expredicate.match(tree_idx, values) end)
 
-    # Adaptive configuration
-    tree_ada = Expredicate.new(adaptive: true)
+    tree_ada = Expredicate.new(adaptive: true) # Adaptive configuration
 
     Enum.each(1..100, fn i ->
       rule = "field#{rem(i, 5)} > #{i}"
@@ -192,8 +182,7 @@ defmodule BenchmarksTest do
   end
 
   defp benchmark_match_1000(results) do
-    # Non-indexed configuration
-    tree_ni = Expredicate.new(index_vars: false)
+    tree_ni = Expredicate.new(index_vars: false) # Non-indexed configuration
 
     Enum.each(1..1000, fn i ->
       rule = "field#{rem(i, 10)} > #{i}"
@@ -215,8 +204,7 @@ defmodule BenchmarksTest do
 
     {match_ni, _} = :timer.tc(fn -> Expredicate.match(tree_ni, values) end)
 
-    # Indexed configuration
-    tree_idx = Expredicate.new(index_vars: true)
+    tree_idx = Expredicate.new(index_vars: true) # Indexed configuration
 
     Enum.each(1..1000, fn i ->
       rule = "field#{rem(i, 10)} > #{i}"
@@ -225,8 +213,7 @@ defmodule BenchmarksTest do
 
     {match_idx, _} = :timer.tc(fn -> Expredicate.match(tree_idx, values) end)
 
-    # Adaptive configuration
-    tree_ada = Expredicate.new(adaptive: true)
+    tree_ada = Expredicate.new(adaptive: true) # Adaptive configuration
 
     Enum.each(1..1000, fn i ->
       rule = "field#{rem(i, 10)} > #{i}"
@@ -239,8 +226,7 @@ defmodule BenchmarksTest do
   end
 
   defp benchmark_remove_100(results) do
-    # Non-indexed configuration
-    tree_ni = Expredicate.new(index_vars: false)
+    tree_ni = Expredicate.new(index_vars: false) # Non-indexed configuration
 
     tree_ni =
       Enum.reduce(1..100, tree_ni, fn i, acc ->
@@ -256,8 +242,7 @@ defmodule BenchmarksTest do
         end)
       end)
 
-    # Indexed configuration
-    tree_idx = Expredicate.new(index_vars: true)
+    tree_idx = Expredicate.new(index_vars: true) # Indexed configuration
 
     tree_idx =
       Enum.reduce(1..100, tree_idx, fn i, acc ->
@@ -273,8 +258,7 @@ defmodule BenchmarksTest do
         end)
       end)
 
-    # Adaptive configuration
-    tree_ada = Expredicate.new(adaptive: true)
+    tree_ada = Expredicate.new(adaptive: true) # Adaptive configuration
 
     tree_ada =
       Enum.reduce(1..100, tree_ada, fn i, acc ->
@@ -294,8 +278,7 @@ defmodule BenchmarksTest do
   end
 
   defp benchmark_remove_1000(results) do
-    # Non-indexed configuration
-    tree_ni = Expredicate.new(index_vars: false)
+    tree_ni = Expredicate.new(index_vars: false) # Non-indexed configuration
 
     tree_ni =
       Enum.reduce(1..1000, tree_ni, fn i, acc ->
@@ -311,8 +294,7 @@ defmodule BenchmarksTest do
         end)
       end)
 
-    # Indexed configuration
-    tree_idx = Expredicate.new(index_vars: true)
+    tree_idx = Expredicate.new(index_vars: true) # Indexed configuration
 
     tree_idx =
       Enum.reduce(1..1000, tree_idx, fn i, acc ->
@@ -328,8 +310,7 @@ defmodule BenchmarksTest do
         end)
       end)
 
-    # Adaptive configuration
-    tree_ada = Expredicate.new(adaptive: true)
+    tree_ada = Expredicate.new(adaptive: true) # Adaptive configuration
 
     tree_ada =
       Enum.reduce(1..1000, tree_ada, fn i, acc ->
@@ -349,8 +330,7 @@ defmodule BenchmarksTest do
   end
 
   defp benchmark_clear_1000(results) do
-    # Non-indexed configuration
-    tree_ni = Expredicate.new(index_vars: false)
+    tree_ni = Expredicate.new(index_vars: false) # Non-indexed configuration
 
     tree_ni =
       Enum.reduce(1..1000, tree_ni, fn i, acc ->
@@ -360,8 +340,7 @@ defmodule BenchmarksTest do
 
     {clear_ni, _} = :timer.tc(fn -> Expredicate.clear(tree_ni) end)
 
-    # Indexed configuration
-    tree_idx = Expredicate.new(index_vars: true)
+    tree_idx = Expredicate.new(index_vars: true) # Indexed configuration
 
     tree_idx =
       Enum.reduce(1..1000, tree_idx, fn i, acc ->
@@ -371,8 +350,7 @@ defmodule BenchmarksTest do
 
     {clear_idx, _} = :timer.tc(fn -> Expredicate.clear(tree_idx) end)
 
-    # Adaptive configuration
-    tree_ada = Expredicate.new(adaptive: true)
+    tree_ada = Expredicate.new(adaptive: true) # Adaptive configuration
 
     tree_ada =
       Enum.reduce(1..1000, tree_ada, fn i, acc ->
@@ -386,8 +364,7 @@ defmodule BenchmarksTest do
   end
 
   defp benchmark_large_scale(results) do
-    # Non-indexed configuration
-    tree_ni = Expredicate.new(index_vars: false)
+    tree_ni = Expredicate.new(index_vars: false) # Non-indexed configuration
 
     {insert_ni, tree_ni} =
       :timer.tc(fn ->
@@ -403,8 +380,7 @@ defmodule BenchmarksTest do
 
     {match_ni, _} = :timer.tc(fn -> Expredicate.match(tree_ni, values) end)
 
-    # Indexed configuration
-    tree_idx = Expredicate.new(index_vars: true)
+    tree_idx = Expredicate.new(index_vars: true) # Indexed configuration
 
     {insert_idx, tree_idx} =
       :timer.tc(fn ->
@@ -417,8 +393,7 @@ defmodule BenchmarksTest do
 
     {match_idx, _} = :timer.tc(fn -> Expredicate.match(tree_idx, values) end)
 
-    # Adaptive configuration
-    tree_ada = Expredicate.new(adaptive: true)
+    tree_ada = Expredicate.new(adaptive: true) # Adaptive configuration
 
     {insert_ada, tree_ada} =
       :timer.tc(fn ->
@@ -439,10 +414,11 @@ defmodule BenchmarksTest do
   end
 
   defp benchmark_adaptive(results) do
-    # Non-indexed configuration
-    tree_ni = Expredicate.new(index_vars: false, adaptive: false)
+    tree_ni = Expredicate.new(index_vars: false, adaptive: false) # Non-indexed configuration
 
-    Enum.each(1..100, fn i -> Expredicate.insert(tree_ni, "rule#{i}", "x > #{i} and y < #{i + 50}") end)
+    Enum.each(1..100, fn i ->
+      Expredicate.insert(tree_ni, "rule#{i}", "x > #{i} and y < #{i + 50}")
+    end)
 
     values = %{"x" => 50.0, "y" => 75.0}
 
@@ -451,8 +427,7 @@ defmodule BenchmarksTest do
 
     ni_avg   = ni_time / 10
 
-    # Indexed configuration
-    tree_idx = Expredicate.new(index_vars: true, adaptive: false)
+    tree_idx = Expredicate.new(index_vars: true, adaptive: false) # Indexed configuration
 
     Enum.each(1..100, fn i ->
       Expredicate.insert(tree_idx, "rule#{i}", "x > #{i} and y < #{i + 50}")
@@ -463,8 +438,7 @@ defmodule BenchmarksTest do
 
     idx_avg  = idx_time / 10
 
-    # Adaptive configuration - before compilation
-    tree_ada = Expredicate.new(adaptive: true)
+    tree_ada = Expredicate.new(adaptive: true) # Adaptive configuration - before compilation
 
     Enum.each(1..100, fn i ->
       Expredicate.insert(tree_ada, "rule#{i}", "x > #{i} and y < #{i + 50}")
@@ -545,8 +519,7 @@ defmodule BenchmarksTest do
   end
 
   defp benchmark_concurrent_reads() do
-    # Setup: Create a tree with 1000 rules
-    tree = Expredicate.new()
+    tree = Expredicate.new() # Setup: Create a tree with 1000 rules
     IO.puts("\n  Building concurrent test tree (1000 rules)...")
 
     Enum.each(1..1000, fn i ->

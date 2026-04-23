@@ -13,8 +13,7 @@ defmodule ExpredicateEnhancementsTest do
       tree = Expredicate.new()
       {:ok, tree} = Expredicate.insert(tree, "rule1", "age > 30")
 
-      # Value map missing 'age' key
-      values = %{"status" => "active"}
+      values = %{"status" => "active"}  # Value map missing 'age' key
       matches = Expredicate.match(tree, values)
 
       # Should not match if variable is undefined
@@ -25,8 +24,7 @@ defmodule ExpredicateEnhancementsTest do
       tree = Expredicate.new()
       {:ok, tree} = Expredicate.insert(tree, "rule1", "age > 30 and status == 'active'")
 
-      # Missing 'age' but has 'status'
-      values = %{"status" => "active"}
+      values = %{"status" => "active"}  # Missing 'age' but has 'status'
       matches = Expredicate.match(tree, values)
 
       assert matches == []
@@ -46,8 +44,7 @@ defmodule ExpredicateEnhancementsTest do
       tree   = Expredicate.new()
       {:ok, tree} = Expredicate.insert(tree, "rule1", "age > 30")
 
-      # Extra keys that rule doesn't use
-      values = %{
+      values = %{                # Extra keys that rule doesn't use
         "age"    => 35,
         "status" => "active",
         "name"   => "John",
@@ -65,8 +62,7 @@ defmodule ExpredicateEnhancementsTest do
       tree = Expredicate.new()
       {:ok, tree} = Expredicate.insert(tree, "rule1", "value == 'string'")
 
-      # Number instead of string
-      values = %{"value" => 42}
+      values = %{"value" => 42}  # Number instead of string
       matches = Expredicate.match(tree, values)
 
       assert matches == []
@@ -76,8 +72,7 @@ defmodule ExpredicateEnhancementsTest do
       tree = Expredicate.new()
       {:ok, tree} = Expredicate.insert(tree, "rule1", "value > 30")
 
-      # String instead of number
-      values = %{"value" => "hello"}
+      values = %{"value" => "hello"}  # String instead of number
       matches = Expredicate.match(tree, values)
 
       # Should not match (type mismatch)
@@ -88,8 +83,7 @@ defmodule ExpredicateEnhancementsTest do
       tree = Expredicate.new()
       {:ok, tree} = Expredicate.insert(tree, "rule1", "active == true")
 
-      # String instead of boolean
-      values = %{"active" => "yes"}
+      values = %{"active" => "yes"}  # String instead of boolean
       matches = Expredicate.match(tree, values)
 
       assert matches == []
@@ -331,8 +325,7 @@ defmodule ExpredicateEnhancementsTest do
         {:ok, _} = Expredicate.insert(tree, "rule#{i}", rule)
       end)
 
-      # Test matching
-      values = %{
+      values = %{  # Test matching
         "value0" => 50,
         "value1" => 60,
         "value2" => 70,
@@ -365,15 +358,13 @@ defmodule ExpredicateEnhancementsTest do
 
       values = %{"value" => 500, "status" => "active"}
 
-      # Run 100 sequential matches
-      results =
+      results =  # Run 100 sequential matches
         Enum.map(1..100, fn _ ->
           matches = Expredicate.match(tree, values)
           matches
         end)
 
-      # All results should be identical
-      first_result = Enum.at(results, 0)
+      first_result = Enum.at(results, 0) # All results should be identical
       assert Enum.all?(results, &(&1 == first_result))
       IO.puts("Verified consistent results across 100 match operations")
     end
@@ -487,8 +478,7 @@ defmodule ExpredicateEnhancementsTest do
     test "benchmark: remove from 100 rules" do
       tree = Expredicate.new()
 
-      # Insert 100 rules
-      tree =
+      tree =                   # Insert 100 rules
         Enum.reduce(1..100, tree, fn i, acc ->
           {:ok, updated} = Expredicate.insert(acc, "remove_test_#{i}", "field > #{i}")
           updated
@@ -519,8 +509,7 @@ defmodule ExpredicateEnhancementsTest do
     test "benchmark: remove from 1000 rules" do
       tree = Expredicate.new()
 
-      # Insert 1000 rules
-      tree =
+      tree =                   # Insert 1000 rules
         Enum.reduce(1..1000, tree, fn i, acc ->
           {:ok, updated} = Expredicate.insert(acc, "remove_test_#{i}", "field > #{i}")
           updated
@@ -570,8 +559,7 @@ defmodule ExpredicateEnhancementsTest do
       insert_time_ms = insert_time / 1_000_000
       IO.puts("Insert complete: #{insert_time_ms}ms")
 
-      # Create values for matching
-      values =
+      values         =                         # Create values for matching
         Enum.reduce(0..19, %{}, fn i, acc -> Map.put(acc, "field#{i}", rem(i * 100, 1000)) end)
 
       IO.puts("Running match against 100000 rules...")
@@ -593,22 +581,19 @@ defmodule ExpredicateEnhancementsTest do
     test "memory is released after tree operations" do
       tree = Expredicate.new()
 
-      # Insert and remove many items
-      tree =
+      tree =                   # Insert and remove many items
         Enum.reduce(1..100, tree, fn i, acc ->
           {:ok, updated} = Expredicate.insert(acc, "rule#{i}", "value > #{i}")
           updated
         end)
 
-      # Remove them all
-      tree =
+      tree =  # Remove them all
         Enum.reduce(1..100, tree, fn i, acc ->
           {:ok, updated} = Expredicate.remove(acc, "rule#{i}")
           updated
         end)
 
-      # Tree should be empty
-      0 = Expredicate.count(tree)
+      0 = Expredicate.count(tree)  # Tree should be empty
       assert Expredicate.empty(tree) == true
     end
 
@@ -616,8 +601,7 @@ defmodule ExpredicateEnhancementsTest do
     test "clear operation is efficient" do
       tree = Expredicate.new()
 
-      # Insert 1000 rules
-      tree =
+      tree =                   # Insert 1000 rules
         Enum.reduce(1..1000, tree, fn i, acc ->
           {:ok, updated} = Expredicate.insert(acc, "rule#{i}", "value > #{i}")
           updated
@@ -644,13 +628,13 @@ defmodule ExpredicateEnhancementsTest do
 
       # Setup initial data
       Enum.each(1..50, fn i ->
-        {:ok, _} = Expredicate.insert(tree, "rule#{i}", "value > #{i * 10} and status == 'active'")
+        {:ok, _} =
+          Expredicate.insert(tree, "rule#{i}", "value > #{i * 10} and status == 'active'")
       end)
 
       values = %{"value" => 1000, "status" => "active"}
 
-      # Spawn multiple tasks that read concurrently
-      tasks =
+      tasks =  # Spawn multiple tasks that read concurrently
         Enum.map(1..10, fn _task_num ->
           Task.async(fn ->
             Enum.map(1..5, fn _ ->
@@ -662,8 +646,7 @@ defmodule ExpredicateEnhancementsTest do
 
       results      = Task.await_many(tasks)
 
-      # All tasks should get same results
-      first_result = Enum.at(results, 0) |> Enum.at(0)
+      first_result = Enum.at(results, 0) |> Enum.at(0) # All tasks should get same results
 
       assert Enum.all?(results, fn task_results ->
                Enum.all?(task_results, &(&1 == first_result))
@@ -674,21 +657,19 @@ defmodule ExpredicateEnhancementsTest do
 
     @tag timeout: 20_000
     test "sequential insert and match operations" do
-      tree = Expredicate.new()
+      tree  = Expredicate.new()
 
-      # Multiple processes doing insert/match in sequence
-      tasks =
+      tasks =                   # Multiple processes doing insert/match in sequence
         Enum.map(1..5, fn task_id -> Task.async(fn -> tree_ref = tree
 
             # Each task inserts different rules
             Enum.each(1..20, fn i ->
               rule_id = "task#{task_id}_rule#{i}"
-              rule    = "value > #{task_id * 100 + i} and status == 'active'"
+              rule    = "value >                  #{task_id * 100 + i} and status == 'active'"
               {:ok, _} = Expredicate.insert(tree_ref, rule_id, rule)
             end)
 
-            # Then tries to match
-            values = %{"value" => 1000, "status" => "active"}
+            values = %{"value" => 1000, "status" => "active"}  # Then tries to match
             matches = Expredicate.match(tree_ref, values)
             length(matches)
           end)
@@ -700,8 +681,7 @@ defmodule ExpredicateEnhancementsTest do
       assert length(results) == 5
       assert Enum.all?(results, &(&1 >= 0))
 
-      # Final count should be 100 (5 tasks × 20 rules each)
-      final_count = Expredicate.count(tree)
+      final_count = Expredicate.count(tree) # Final count should be 100 (5 tasks × 20 rules each)
       assert final_count == 100
 
       IO.puts("Concurrent insert/match test: #{final_count} total rules inserted")
@@ -713,8 +693,7 @@ defmodule ExpredicateEnhancementsTest do
     test "customer segmentation with complex rules" do
       tree  = Expredicate.new()
 
-      # Define complex business rules
-      rules = [
+      rules = [                 # Define complex business rules
         {"vip_customer", "lifetime_spend > 10000 and account_age > 365 and churn_risk < 20"},
         {"at_risk", "days_since_purchase > 90 or churn_risk > 70"},
         {"high_value", "monthly_spend > 1000 and status == 'active'"},
@@ -727,8 +706,7 @@ defmodule ExpredicateEnhancementsTest do
       # Insert all rules
       Enum.each(rules, fn {id, rule} -> {:ok, _} = Expredicate.insert(tree, id, rule) end)
 
-      # Test various customer profiles
-      customers = [
+      customers = [  # Test various customer profiles
         {
           "customer_1",
           %{
@@ -794,8 +772,7 @@ defmodule ExpredicateEnhancementsTest do
     test "product catalog filtering with multiple criteria" do
       tree  = Expredicate.new()
 
-      # Product rules
-      rules = [
+      rules = [                 # Product rules
         {"low_stock", "quantity_available < 10"},
         {"need_reorder", "quantity_available < quantity_reorder_point"},
         {"on_sale", "discount_percentage > 0"},
@@ -809,8 +786,7 @@ defmodule ExpredicateEnhancementsTest do
 
       Enum.each(rules, fn {id, rule} -> {:ok, _} = Expredicate.insert(tree, id, rule) end)
 
-      # Test products
-      products = [
+      products = [  # Test products
         {
           "laptop_pro",
           %{
@@ -856,19 +832,20 @@ defmodule ExpredicateEnhancementsTest do
       tree = Expredicate.new()
 
       # Warmup
-      Enum.each(1..10, fn i -> {:ok, _} = Expredicate.insert(tree, "warmup#{i}", "value > #{i}") end)
+      Enum.each(1..10, fn i ->
+        {:ok, _} = Expredicate.insert(tree, "warmup#{i}", "value > #{i}")
+      end)
 
       # Run operations in rounds and track performance
       Enum.each(1..5, fn round ->
         # Insert batch
         Enum.each(1..20, fn i ->
           rule_id = "round#{round}_rule#{i}"
-          rule    = "value > #{round * 100 + i}"
+          rule    = "value >                 #{round * 100 + i}"
           {:ok, _} = Expredicate.insert(tree, rule_id, rule)
         end)
 
-        # Match operation
-        values = %{"value" => 1000}
+        values = %{"value" => 1000}  # Match operation
         _matches = Expredicate.match(tree, values)
 
         # Remove some
@@ -878,8 +855,7 @@ defmodule ExpredicateEnhancementsTest do
         end)
       end)
 
-      # Final verification
-      count = Expredicate.count(tree)
+      count = Expredicate.count(tree) # Final verification
       assert count > 0
 
       IO.puts("Stability test: completed 5 rounds of insert/match/remove cycles")

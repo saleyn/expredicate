@@ -14,14 +14,13 @@ defmodule Expredicate.MixProject do
       test_coverage:   [
         output:         ".cover",
         ignore_modules: [Expredicate],
-        # allow_failure: true,
-        summary:        [threshold: 90]
+        summary:        [threshold: 90]  # allow_failure: true,
       ]
     ]
   end
 
   defp elixirc_paths(:prod), do: ["lib"]
-  defp elixirc_paths(_), do: ["lib", "examples"]
+  defp elixirc_paths(_),     do: ["lib", "examples"]
 
   def application do
     [
