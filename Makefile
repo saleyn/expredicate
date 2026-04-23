@@ -10,6 +10,7 @@ deps:
 
 compile: fmt
 	$(MAKE) -C c_src
+	@mix compile
 
 clean distclean:
 	$(MAKE) -C c_src $@
