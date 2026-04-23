@@ -14,7 +14,8 @@ defmodule Expredicate.MixProject do
       test_coverage:   [
         output:         ".cover",
         ignore_modules: [Expredicate],
-        summary:        [threshold: 90]  # allow_failure: true,
+        # allow_failure: true,
+        summary:        [threshold: 90]
       ]
     ]
   end
