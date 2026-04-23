@@ -41,14 +41,13 @@
 // Custom Hash Functions
 // ============================================================================
 
-namespace std {
-    // Custom hash function for std::string using xxhash
-    template <>
-    struct hash<std::string> {
-        size_t operator()(const std::string& s) const noexcept {
-            return xxh::xxhash<64>(s);
-        }
-    };
+namespace expredicate {
+  // Custom hash function for std::string using xxHash
+  struct XXHashStringHasher {
+    size_t operator()(const std::string& s) const noexcept {
+      return xxh::xxhash<64>(s);
+    }
+  };
 }
 
 /**
@@ -60,18 +59,11 @@ namespace std {
 
 namespace expredicate {
 
-// Custom hash function for std::string using xxHash C++ wrapper
-// struct XXHashStringHasher {
-//   size_t operator()(const std::string& s) const noexcept {
-//     return xxh::xxhash<64>{}(s);
-//   }
-// };
-
 // Value type for rule evaluation
 // Forward declare for recursive variant
 struct ValueList;
 using Value = std::variant<bool, int64_t, double, std::string, std::vector<std::string>>;
-using ValueMap = std::unordered_map<std::string, Value>;
+using ValueMap = std::unordered_map<std::string, Value, XXHashStringHasher>;
 
 
 /**
@@ -933,7 +925,7 @@ private:
 #else
   // SHARED_MUTEX Strategy (default): Use std::unordered_map with std::shared_mutex
   // Provides explicit reader-writer locking for concurrent access
-  using hashmap = std::unordered_map<std::string, std::unique_ptr<Expression>>;
+  using hashmap = std::unordered_map<std::string, std::unique_ptr<Expression>, XXHashStringHasher>;
 #endif
   hashmap rules;
   bool case_sensitive = true;  // true = case-sensitive (default), false = case-insensitive

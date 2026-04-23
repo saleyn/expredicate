@@ -1,4 +1,4 @@
-.PHONY: all clean
+.PHONY: all clean format fmt
 
 # Makefile for the elixir_make compiler
 # Delegates to c_src/Makefile for actual compilation
@@ -8,7 +8,7 @@ all: compile
 deps:
 	mix deps.get
 
-compile: fmt
+compile: format
 	$(MAKE) -C c_src
 	@mix compile
 
@@ -22,6 +22,9 @@ test: priv/expredicate.so
 
 fmt:
 	mix format --check-formatted
+
+format:
+	mix format
 
 cover:
 	mix test --cover
