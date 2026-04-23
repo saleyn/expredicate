@@ -22,7 +22,7 @@ defmodule AtreeEngineTest do
     end
 
     test "new/1 with keyword list converts to map options" do
-      tree = Atree.new([engine: :bytecode])
+      tree = Atree.new(engine: :bytecode)
       assert is_reference(tree)
       assert Atree.empty(tree)
     end
@@ -90,7 +90,7 @@ defmodule AtreeEngineTest do
         {"r5", "not premium"}
       ]
 
-      parser_tree = Atree.new(engine: :parser)
+      parser_tree   = Atree.new(engine: :parser)
       bytecode_tree = Atree.new(engine: :bytecode)
 
       # Insert all rules into both trees
@@ -105,14 +105,15 @@ defmodule AtreeEngineTest do
           test_cases = [
             %{"age" => 35, "status" => "active", "score" => "A", "premium" => false},
             %{"age" => 25, "status" => "inactive", "score" => "C", "premium" => true},
-            %{"age" => 40, "status" => "active", "score" => "B", "premium" => false},
+            %{"age" => 40, "status" => "active", "score" => "B", "premium" => false}
           ]
 
           Enum.each(test_cases, fn values ->
             p_matches = Atree.match(p_tree, values) |> Enum.sort()
             b_matches = Atree.match(b_tree, values) |> Enum.sort()
+
             assert p_matches == b_matches,
-              "Mismatch for values #{inspect(values)}: parser=#{inspect(p_matches)} vs bytecode=#{inspect(b_matches)}"
+                   "Mismatch for values #{inspect(values)}: parser=#{inspect(p_matches)} vs bytecode=#{inspect(b_matches)}"
           end)
       end
     end
@@ -126,7 +127,7 @@ defmodule AtreeEngineTest do
     end
 
     test "empty options map creates parser engine" do
-      tree = Atree.new(%{})
+      tree    = Atree.new(%{})
       assert is_reference(tree)
       {:ok, tree} = Atree.insert(tree, "rule1", "true")
       matches = Atree.match(tree, %{})

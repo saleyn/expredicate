@@ -4,7 +4,7 @@ defmodule Atree.MixProject do
   def project do
     [
       app:             :exatree,
-      version:         "0.1.0",
+      version:         "0.1.1",
       elixir:          "~> 1.14",
       start_permanent: Mix.env() == :prod,
       elixirc_paths:   elixirc_paths(Mix.env()),
@@ -12,16 +12,16 @@ defmodule Atree.MixProject do
       docs:            docs(),
       package:         package(),
       test_coverage:   [
-        output: ".cover",
+        output:         ".cover",
         ignore_modules: [Atree],
-        #allow_failure: true,
-        summary: [threshold: 90]
+        # allow_failure: true,
+        summary:        [threshold: 90]
       ]
     ]
   end
 
   defp elixirc_paths(:prod), do: ["lib"]
-  defp elixirc_paths(_),     do: ["lib", "examples"]
+  defp elixirc_paths(_), do: ["lib", "examples"]
 
   def application do
     [

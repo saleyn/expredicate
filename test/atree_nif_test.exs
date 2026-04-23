@@ -383,8 +383,9 @@ defmodule AtreeTest do
     end
 
     test "handles large int64_t values" do
-      tree = Atree.new()
-      large_num = 9_223_372_036_854_775_807  # max int64
+      tree      = Atree.new()
+      # max int64
+      large_num = 9_223_372_036_854_775_807
       {:ok, tree} = Atree.insert(tree, "r1", "value == 9223372036854775807")
       {:ok, tree} = Atree.insert(tree, "r2", "value > 9000000000000000000")
 
@@ -411,9 +412,12 @@ defmodule AtreeTest do
       tree = Atree.new()
       {:ok, tree} = Atree.insert(tree, "higher", "value > 50")
 
-      matches1 = Atree.match(tree, %{"value" => 100})  # int64
-      matches2 = Atree.match(tree, %{"value" => 100.5})  # double
-      matches3 = Atree.match(tree, %{"value" => 25})  # int64
+      # int64
+      matches1 = Atree.match(tree, %{"value" => 100})
+      # double
+      matches2 = Atree.match(tree, %{"value" => 100.5})
+      # int64
+      matches3 = Atree.match(tree, %{"value" => 25})
 
       assert matches1 == ["higher"]
       assert matches2 == ["higher"]
@@ -457,8 +461,10 @@ defmodule AtreeTest do
 
     test "int64_t truthiness in logical expressions" do
       tree = Atree.new()
-      {:ok, tree} = Atree.insert(tree, "truthy", "count")  # non-zero int is truthy
-      {:ok, tree} = Atree.insert(tree, "falsy", "not count")  # zero int is falsy
+      # non-zero int is truthy
+      {:ok, tree} = Atree.insert(tree, "truthy", "count")
+      # zero int is falsy
+      {:ok, tree} = Atree.insert(tree, "falsy", "not count")
 
       matches1 = Atree.match(tree, %{"count" => 1})
       assert matches1 == ["truthy"]

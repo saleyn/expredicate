@@ -8,7 +8,7 @@ all: compile
 deps:
 	mix deps.get
 
-compile:
+compile: fmt
 	$(MAKE) -C c_src
 
 clean distclean:
@@ -18,6 +18,9 @@ clean distclean:
 
 test: priv/atree.so
 	mix $@
+
+fmt:
+	mix format --check-formatted
 
 cover:
 	mix test --cover

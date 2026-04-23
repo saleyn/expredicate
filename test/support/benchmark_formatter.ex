@@ -4,7 +4,7 @@ defmodule BenchmarkFormatter do
   Displays all times in microseconds with improvement ratios.
   """
 
-  @doc """
+  @doc       """
   Format benchmark results as a table.
 
   Accepts benchmarks as tuples with numeric microsecond values:
@@ -26,10 +26,10 @@ defmodule BenchmarkFormatter do
     formatted_results = Enum.map(results, &format_benchmark/1)
 
     # Find column widths
-    col_widths = calculate_widths(formatted_results)
+    col_widths        = calculate_widths(formatted_results)
 
     # Build output
-    lines = [
+    lines             = [
       horizontal_line(col_widths),
       header_row(col_widths),
       horizontal_line(col_widths)
@@ -37,9 +37,7 @@ defmodule BenchmarkFormatter do
 
     lines =
       lines ++
-        Enum.map(formatted_results, fn row ->
-          format_row(row, col_widths)
-        end)
+        Enum.map(formatted_results, fn row -> format_row(row, col_widths) end)
 
     lines = lines ++ [horizontal_line(col_widths)]
 
@@ -61,18 +59,19 @@ defmodule BenchmarkFormatter do
   """
   def simple_table(results, _title \\ "BENCHMARKS") when is_list(results) do
     # Format time values
-    formatted_results = Enum.map(results, fn {name, time_us} ->
-      {name, format_us(time_us)}
-    end)
+    formatted_results =
+      Enum.map(results, fn {name, time_us} -> {name, format_us(time_us)} end)
 
     # Calculate column widths
     headers = ["Benchmark", "Time"]
+
     col_widths =
       Enum.reduce(formatted_results, [0, 0], fn {name, time_str}, [w1, w2] ->
         [max(w1, String.length(name)), max(w2, String.length(time_str))]
       end)
 
-    col_widths = Enum.zip(headers, col_widths)
+    col_widths =
+      Enum.zip(headers, col_widths)
       |> Enum.map(fn {h, w} -> max(String.length(h), w) end)
 
     # Build output
@@ -143,10 +142,11 @@ defmodule BenchmarkFormatter do
   defp format_us(us) when is_number(us) do
     # Convert to float to handle both integer and float inputs
     us_float = us / 1.0
+
     cond do
       us_float >= 1_000_000 -> "#{Float.round(us_float / 1_000_000, 3)}ms"
-      us_float >= 1_000 -> "#{Float.round(us_float / 1_000, 3)}ms"
-      true -> "#{Float.round(us_float, 2)}μs"
+      us_float >= 1_000     -> "#{Float.round(us_float / 1_000, 3)}ms"
+      true                  -> "#{Float.round(us_float, 2)}μs"
     end
   end
 
@@ -156,8 +156,8 @@ defmodule BenchmarkFormatter do
     headers = ["Benchmark", "Non-indexed", "Indexed", "Adaptive"]
 
     col_widths =
-      Enum.reduce(results, [0, 0, 0, 0], fn row, widths ->
-        row_tuple = Tuple.to_list(row)
+      Enum.reduce(results, [0, 0, 0, 0], fn row, widths -> row_tuple = Tuple.to_list(row)
+
         Enum.zip(widths, row_tuple)
         |> Enum.map(fn {w, val} -> max(w, String.length(to_string(val))) end)
       end)
@@ -176,7 +176,7 @@ defmodule BenchmarkFormatter do
       col_widths
       |> Enum.with_index()
       |> Enum.map(fn {w, i} ->
-        String.duplicate("-", (i == 0 or i == last_col_idx) && w+1 || w)
+        String.duplicate("-", ((i == 0 or i == last_col_idx) && w + 1) || w)
       end)
 
     "+" <> Enum.join(dashes, "+") <> "+"
@@ -205,8 +205,8 @@ defmodule BenchmarkFormatter do
   end
 
   defp pad_cell(text, width) do
-    padding = width - String.length(text)
-    left_pad = div(padding + 1, 2)
+    padding   = width - String.length(text)
+    left_pad  = div(padding + 1, 2)
     right_pad = padding - left_pad
     String.duplicate(" ", left_pad) <> text <> String.duplicate(" ", right_pad)
   end

@@ -66,6 +66,7 @@ defmodule BenchmarksTest do
   defp benchmark_insert_100(results) do
     # Non-indexed configuration
     tree_ni = Atree.new(index_vars: false)
+
     {insert_ni, _} =
       :timer.tc(fn ->
         Enum.reduce(1..100, tree_ni, fn i, acc ->
@@ -77,6 +78,7 @@ defmodule BenchmarksTest do
 
     # Indexed configuration
     tree_idx = Atree.new(index_vars: true)
+
     {insert_idx, _} =
       :timer.tc(fn ->
         Enum.reduce(1..100, tree_idx, fn i, acc ->
@@ -88,6 +90,7 @@ defmodule BenchmarksTest do
 
     # Adaptive configuration
     tree_ada = Atree.new(adaptive: true)
+
     {insert_ada, _} =
       :timer.tc(fn ->
         Enum.reduce(1..100, tree_ada, fn i, acc ->
@@ -103,6 +106,7 @@ defmodule BenchmarksTest do
   defp benchmark_insert_1000(results) do
     # Non-indexed configuration
     tree_ni = Atree.new(index_vars: false)
+
     {insert_ni, _} =
       :timer.tc(fn ->
         Enum.reduce(1..1000, tree_ni, fn i, acc ->
@@ -116,6 +120,7 @@ defmodule BenchmarksTest do
 
     # Indexed configuration
     tree_idx = Atree.new(index_vars: true)
+
     {insert_idx, _} =
       :timer.tc(fn ->
         Enum.reduce(1..1000, tree_idx, fn i, acc ->
@@ -129,6 +134,7 @@ defmodule BenchmarksTest do
 
     # Adaptive configuration
     tree_ada = Atree.new(adaptive: true)
+
     {insert_ada, _} =
       :timer.tc(fn ->
         Enum.reduce(1..1000, tree_ada, fn i, acc ->
@@ -146,6 +152,7 @@ defmodule BenchmarksTest do
   defp benchmark_match_100(results) do
     # Non-indexed configuration
     tree_ni = Atree.new(index_vars: false)
+
     Enum.each(1..100, fn i ->
       rule = "field#{rem(i, 5)} > #{i}"
       {:ok, _} = Atree.insert(tree_ni, "rule_#{i}", rule)
@@ -163,6 +170,7 @@ defmodule BenchmarksTest do
 
     # Indexed configuration
     tree_idx = Atree.new(index_vars: true)
+
     Enum.each(1..100, fn i ->
       rule = "field#{rem(i, 5)} > #{i}"
       {:ok, _} = Atree.insert(tree_idx, "rule_#{i}", rule)
@@ -172,6 +180,7 @@ defmodule BenchmarksTest do
 
     # Adaptive configuration
     tree_ada = Atree.new(adaptive: true)
+
     Enum.each(1..100, fn i ->
       rule = "field#{rem(i, 5)} > #{i}"
       {:ok, _} = Atree.insert(tree_ada, "rule_#{i}", rule)
@@ -185,6 +194,7 @@ defmodule BenchmarksTest do
   defp benchmark_match_1000(results) do
     # Non-indexed configuration
     tree_ni = Atree.new(index_vars: false)
+
     Enum.each(1..1000, fn i ->
       rule = "field#{rem(i, 10)} > #{i}"
       {:ok, _} = Atree.insert(tree_ni, "rule_#{i}", rule)
@@ -207,6 +217,7 @@ defmodule BenchmarksTest do
 
     # Indexed configuration
     tree_idx = Atree.new(index_vars: true)
+
     Enum.each(1..1000, fn i ->
       rule = "field#{rem(i, 10)} > #{i}"
       {:ok, _} = Atree.insert(tree_idx, "rule_#{i}", rule)
@@ -216,6 +227,7 @@ defmodule BenchmarksTest do
 
     # Adaptive configuration
     tree_ada = Atree.new(adaptive: true)
+
     Enum.each(1..1000, fn i ->
       rule = "field#{rem(i, 10)} > #{i}"
       {:ok, _} = Atree.insert(tree_ada, "rule_#{i}", rule)
@@ -229,6 +241,7 @@ defmodule BenchmarksTest do
   defp benchmark_remove_100(results) do
     # Non-indexed configuration
     tree_ni = Atree.new(index_vars: false)
+
     tree_ni =
       Enum.reduce(1..100, tree_ni, fn i, acc ->
         {:ok, updated} = Atree.insert(acc, "remove_test_#{i}", "field > #{i}")
@@ -245,6 +258,7 @@ defmodule BenchmarksTest do
 
     # Indexed configuration
     tree_idx = Atree.new(index_vars: true)
+
     tree_idx =
       Enum.reduce(1..100, tree_idx, fn i, acc ->
         {:ok, updated} = Atree.insert(acc, "remove_test_#{i}", "field > #{i}")
@@ -261,6 +275,7 @@ defmodule BenchmarksTest do
 
     # Adaptive configuration
     tree_ada = Atree.new(adaptive: true)
+
     tree_ada =
       Enum.reduce(1..100, tree_ada, fn i, acc ->
         {:ok, updated} = Atree.insert(acc, "remove_test_#{i}", "field > #{i}")
@@ -281,6 +296,7 @@ defmodule BenchmarksTest do
   defp benchmark_remove_1000(results) do
     # Non-indexed configuration
     tree_ni = Atree.new(index_vars: false)
+
     tree_ni =
       Enum.reduce(1..1000, tree_ni, fn i, acc ->
         {:ok, updated} = Atree.insert(acc, "remove_test_#{i}", "field > #{i}")
@@ -297,6 +313,7 @@ defmodule BenchmarksTest do
 
     # Indexed configuration
     tree_idx = Atree.new(index_vars: true)
+
     tree_idx =
       Enum.reduce(1..1000, tree_idx, fn i, acc ->
         {:ok, updated} = Atree.insert(acc, "remove_test_#{i}", "field > #{i}")
@@ -313,6 +330,7 @@ defmodule BenchmarksTest do
 
     # Adaptive configuration
     tree_ada = Atree.new(adaptive: true)
+
     tree_ada =
       Enum.reduce(1..1000, tree_ada, fn i, acc ->
         {:ok, updated} = Atree.insert(acc, "remove_test_#{i}", "field > #{i}")
@@ -333,6 +351,7 @@ defmodule BenchmarksTest do
   defp benchmark_clear_1000(results) do
     # Non-indexed configuration
     tree_ni = Atree.new(index_vars: false)
+
     tree_ni =
       Enum.reduce(1..1000, tree_ni, fn i, acc ->
         {:ok, updated} = Atree.insert(acc, "rule#{i}", "value > #{i}")
@@ -343,6 +362,7 @@ defmodule BenchmarksTest do
 
     # Indexed configuration
     tree_idx = Atree.new(index_vars: true)
+
     tree_idx =
       Enum.reduce(1..1000, tree_idx, fn i, acc ->
         {:ok, updated} = Atree.insert(acc, "rule#{i}", "value > #{i}")
@@ -353,6 +373,7 @@ defmodule BenchmarksTest do
 
     # Adaptive configuration
     tree_ada = Atree.new(adaptive: true)
+
     tree_ada =
       Enum.reduce(1..1000, tree_ada, fn i, acc ->
         {:ok, updated} = Atree.insert(acc, "rule#{i}", "value > #{i}")
@@ -367,6 +388,7 @@ defmodule BenchmarksTest do
   defp benchmark_large_scale(results) do
     # Non-indexed configuration
     tree_ni = Atree.new(index_vars: false)
+
     {insert_ni, tree_ni} =
       :timer.tc(fn ->
         Enum.reduce(1..100_000, tree_ni, fn i, acc ->
@@ -383,6 +405,7 @@ defmodule BenchmarksTest do
 
     # Indexed configuration
     tree_idx = Atree.new(index_vars: true)
+
     {insert_idx, tree_idx} =
       :timer.tc(fn ->
         Enum.reduce(1..100_000, tree_idx, fn i, acc ->
@@ -396,6 +419,7 @@ defmodule BenchmarksTest do
 
     # Adaptive configuration
     tree_ada = Atree.new(adaptive: true)
+
     {insert_ada, tree_ada} =
       :timer.tc(fn ->
         Enum.reduce(1..100_000, tree_ada, fn i, acc ->
@@ -417,63 +441,46 @@ defmodule BenchmarksTest do
   defp benchmark_adaptive(results) do
     # Non-indexed configuration
     tree_ni = Atree.new(index_vars: false, adaptive: false)
-    Enum.each(1..100, fn i ->
-      Atree.insert(tree_ni, "rule#{i}", "x > #{i} and y < #{i + 50}")
-    end)
+
+    Enum.each(1..100, fn i -> Atree.insert(tree_ni, "rule#{i}", "x > #{i} and y < #{i + 50}") end)
 
     values = %{"x" => 50.0, "y" => 75.0}
 
     {ni_time, _} =
-      :timer.tc(fn ->
-        Enum.each(1..10, fn _ ->
-          Atree.match(tree_ni, values)
-        end)
-      end)
+      :timer.tc(fn -> Enum.each(1..10, fn _ -> Atree.match(tree_ni, values) end) end)
 
-    ni_avg = ni_time / 10
+    ni_avg   = ni_time / 10
 
     # Indexed configuration
     tree_idx = Atree.new(index_vars: true, adaptive: false)
+
     Enum.each(1..100, fn i ->
       Atree.insert(tree_idx, "rule#{i}", "x > #{i} and y < #{i + 50}")
     end)
 
     {idx_time, _} =
-      :timer.tc(fn ->
-        Enum.each(1..10, fn _ ->
-          Atree.match(tree_idx, values)
-        end)
-      end)
+      :timer.tc(fn -> Enum.each(1..10, fn _ -> Atree.match(tree_idx, values) end) end)
 
-    idx_avg = idx_time / 10
+    idx_avg  = idx_time / 10
 
     # Adaptive configuration - before compilation
     tree_ada = Atree.new(adaptive: true)
+
     Enum.each(1..100, fn i ->
       Atree.insert(tree_ada, "rule#{i}", "x > #{i} and y < #{i + 50}")
     end)
 
     {before_time, _} =
-      :timer.tc(fn ->
-        Enum.each(1..5, fn _ ->
-          Atree.match(tree_ada, values)
-        end)
-      end)
+      :timer.tc(fn -> Enum.each(1..5, fn _ -> Atree.match(tree_ada, values) end) end)
 
     before_avg = before_time / 5
 
     # Trigger compilation by matching more times
-    Enum.each(1..10, fn _ ->
-      Atree.match(tree_ada, values)
-    end)
+    Enum.each(1..10, fn _ -> Atree.match(tree_ada, values) end)
 
     # Adaptive configuration - after compilation
     {after_time, _} =
-      :timer.tc(fn ->
-        Enum.each(1..5, fn _ ->
-          Atree.match(tree_ada, values)
-        end)
-      end)
+      :timer.tc(fn -> Enum.each(1..5, fn _ -> Atree.match(tree_ada, values) end) end)
 
     after_avg = after_time / 5
 
@@ -489,8 +496,7 @@ defmodule BenchmarksTest do
 
     # Non-indexed build and match
     {build_ni, tree_ni} =
-      :timer.tc(fn ->
-        tree = Atree.new(index_vars: false)
+      :timer.tc(fn -> tree = Atree.new(index_vars: false)
 
         Enum.reduce(1..num_rules, tree, fn i, acc ->
           rule = "field#{rem(i, 15)} > #{rem(i, 500)}"
@@ -501,8 +507,7 @@ defmodule BenchmarksTest do
 
     # Indexed build and match
     {build_idx, tree_idx} =
-      :timer.tc(fn ->
-        tree = Atree.new(index_vars: true)
+      :timer.tc(fn -> tree = Atree.new(index_vars: true)
 
         Enum.reduce(1..num_rules, tree, fn i, acc ->
           rule = "field#{rem(i, 15)} > #{rem(i, 500)}"
@@ -513,8 +518,7 @@ defmodule BenchmarksTest do
 
     # Adaptive build and match
     {build_ada, tree_ada} =
-      :timer.tc(fn ->
-        tree = Atree.new(adaptive: true)
+      :timer.tc(fn -> tree = Atree.new(adaptive: true)
 
         Enum.reduce(1..num_rules, tree, fn i, acc ->
           rule = "field#{rem(i, 15)} > #{rem(i, 500)}"
@@ -529,7 +533,7 @@ defmodule BenchmarksTest do
       "field2" => 350
     }
 
-    {match_ni, _} = :timer.tc(fn -> Atree.match(tree_ni, values) end)
+    {match_ni, _} = :timer.tc(fn  -> Atree.match(tree_ni, values) end)
     {match_idx, _} = :timer.tc(fn -> Atree.match(tree_idx, values) end)
     {match_ada, _} = :timer.tc(fn -> Atree.match(tree_ada, values) end)
 
@@ -554,25 +558,21 @@ defmodule BenchmarksTest do
 
     # Test 1: Sequential matches
     {time_seq, _} =
-      :timer.tc(fn ->
-        Enum.each(1..10, fn _ -> Atree.match(tree, values) end)
-      end)
+      :timer.tc(fn -> Enum.each(1..10, fn _ -> Atree.match(tree, values) end) end)
 
     # Test 2: Concurrent reads (4 tasks, 10 matches each)
     {time_concurrent, _} =
       :timer.tc(fn ->
         1..4
         |> Enum.map(fn _ ->
-          Task.async(fn ->
-            Enum.each(1..10, fn _ -> Atree.match(tree, values) end)
-          end)
+          Task.async(fn -> Enum.each(1..10, fn _ -> Atree.match(tree, values) end) end)
         end)
         |> Task.await_many()
       end)
 
-    seq_per_match = time_seq / 10
+    seq_per_match  = time_seq / 10
     conc_per_match = time_concurrent / 40
-    speedup = time_seq / time_concurrent
+    speedup        = time_seq / time_concurrent
 
     IO.puts("""
       Concurrent Match Benchmark (1000 rules):
